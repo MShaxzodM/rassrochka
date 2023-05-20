@@ -1,55 +1,62 @@
 import { Router } from "express"
 import { db } from "../db/db"
 import { json } from "body-parser"
+import fs from 'fs'
+import multer from 'multer'
+const upload = multer({ dest: 'uploads/' })
 const app = Router()
 app.use(json())
 app.post('/',async(req,res)=>{  
-    await postCmr(req,res)
-    await postGrn(req,res)
-    await postCont(req,res)
-    res.sendStatus(200)
-})
-app.post('/:user_id/kafil',async(req,res)=>{
-    await postGrn(req,res)
+    postUser(req,res)
     res.sendStatus(200)
 })
 
-app.post('/:user_id/contracts',async(req,res)=>{
-    await postCont(req,res)
-    res.sendStatus(200)
-})
+interface User{
+    first_name: string;
+    last_name: string;
+    phone: string;
+    kepil_first_name: string;
+    kepil_last_name: string;
+    kepil_phone: string;
+    images: [file:Object];
+    total_sum: number;
+    first_payment: number;
+    months: number;
+    date: string;
+}
 
-
-
- async function postCmr(req:any,res:any){
+async function postUser(req:any,res:any){
     const date = new Date()
-    let {name,surname,phone,pcopy} = req.body    
-    if(name&&surname&&phone&&pcopy){
-        const data = await db.insert({name,surname,phone,pcopy,date}).into('customers').returning('id')
+    const {images} = req.body
+    console.log(images)
+    delete req.body.images 
+    if(req.body){
+        const data = await db.insert(req.body).into('customers').returning('id')
         req.params.user_id = data[0].id*1
 
     }else{
         res.send("Maydonlar to'liq to'ldirilmagan")
- }}
- async function postGrn(req:any,res:any){
-    const date = new Date()
-    const {name,surname,phone,pcopy} = req.body.kafil   
-    const{user_id} = req.params
-    if(name&&surname&&phone&&pcopy){
-        await db.insert({user_id,name,surname,phone,pcopy,date}).into('guarantors')
-    }else{
-        res.send("Maydonlar to'liq to'ldirilmagan")
- }}
- async function postCont(req:any,res:any){
-    const date = new Date()
-    const {pdf,loan,term,every_month} = req.body.contracts
-    const{user_id} = req.params
-    if(pdf&&loan&&term&&every_month){
-       await db.insert({user_id,pdf,loan,date,term,every_month}).into('contracts')
-        
-    }else{
-        res.send("Maydonlar to'liq to'ldirilmagan")
- }}
+    }
+}
+
+interface Payments{
+    user_id:number |string ,
+    payment:number,
+    date:string,
+    type:'cash' | 'card'
+}
+
+app.post('/:user_id/payment',async(req,res)=>{
+    let data:Payments = req.body
+    data.user_id = req.params.user_id
+    await db.insert(data).into('payments')
+})
+
+
+
+
+
+
 
 interface Arr{
     paid:number
@@ -65,7 +72,6 @@ function sum(arr:Array<Arr>) {
 
     return sum; 
 } 
-
 
 async function testCron(){
     const day = new Date()
@@ -111,9 +117,9 @@ async function cron2(today:Date) {
 
 
 
-testCron()
-const today = new Date()
-cron2(today)
+// testCron()
+// const today = new Date()
+// cron2(today)
 var cron = require('node-cron');
 
 cron.schedule('1 0 0 * * *', () => {
