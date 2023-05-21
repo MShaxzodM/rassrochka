@@ -1,9 +1,15 @@
 import { Router } from "express"
 import { db } from "../db/db"
 import { json } from "body-parser"
+<<<<<<< HEAD
 const path = require('path');
 const multer = require('multer');
 const morgan = require('morgan')
+=======
+import fs from 'fs'
+import multer from 'multer'
+const upload = multer({ dest: 'uploads/' })
+>>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
 const app = Router()
 app.use(json())
 app.post('/',async(req,res)=>{  
@@ -11,6 +17,7 @@ app.post('/',async(req,res)=>{
     res.sendStatus(200)
 })
 
+<<<<<<< HEAD
 // app.use(morgan('dev'))
 const storage = multer.diskStorage({
     destination: (req:any, file:any, cb:any) => {
@@ -69,6 +76,22 @@ interface User{
     date: string;
 }
 
+=======
+interface User{
+    first_name: string;
+    last_name: string;
+    phone: string;
+    kepil_first_name: string;
+    kepil_last_name: string;
+    kepil_phone: string;
+    images: [file:Object];
+    total_sum: number;
+    first_payment: number;
+    months: number;
+    date: string;
+}
+
+>>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
 async function postUser(req:any,res:any){
     const date = new Date()
     const {images} = req.body
@@ -94,7 +117,10 @@ app.post('/:user_id/payment',async(req,res)=>{
     let data:Payments = req.body
     data.user_id = req.params.user_id
     await db.insert(data).into('payments')
+<<<<<<< HEAD
     res.sendStatus(200)
+=======
+>>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
 })
 
 
