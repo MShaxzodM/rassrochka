@@ -1,55 +1,107 @@
 import { Router } from "express"
 import { db } from "../db/db"
 import { json } from "body-parser"
+const path = require('path');
+const multer = require('multer');
+const morgan = require('morgan')
 const app = Router()
 app.use(json())
 app.post('/',async(req,res)=>{  
-    await postCmr(req,res)
-    await postGrn(req,res)
-    await postCont(req,res)
-    res.sendStatus(200)
-})
-app.post('/:user_id/kafil',async(req,res)=>{
-    await postGrn(req,res)
+    postUser(req,res)
     res.sendStatus(200)
 })
 
-app.post('/:user_id/contracts',async(req,res)=>{
-    await postCont(req,res)
+// app.use(morgan('dev'))
+const storage = multer.diskStorage({
+    destination: (req:any, file:any, cb:any) => {
+      // Specify the directory where you want to store the uploaded files
+      cb(null, 'uploads/');
+    },
+    filename: (req:any, file:any, cb:any) => {
+        // Generate a custom filename based on your requirements
+        const originalname = file.originalname;
+        const extension = originalname.substring(originalname.lastIndexOf('.'));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = uniqueSuffix + extension;
+        cb(null, filename);
+      },
+  });
+  const upload = multer({ storage: storage });
+
+app.post('/todesodi',upload.array('images',3), async (req:any, res) => {	
+    console.log(req.files)
+    const images = req.files
+    const user_id = '3'
+    images.map((image:any)=>{
+        const {path,filename} = image;
+        db.insert({
+            user_id,
+            filename,
+            path,
+          })
+            .into('images')
+            .catch(err =>{
+               console.log(err)
+            }
+             
+            );
+    })
     res.sendStatus(200)
-})
+  }) 
 
 
 
- async function postCmr(req:any,res:any){
+
+
+
+interface User{
+    id:number,
+    first_name: string;
+    last_name: string;
+    phone: string;
+    kepil_first_name: string;
+    kepil_last_name: string;
+    kepil_phone: string;
+    images: [file:Object];
+    total_sum: number;
+    first_payment: number;
+    months: number;
+    date: string;
+}
+
+async function postUser(req:any,res:any){
     const date = new Date()
-    let {name,surname,phone,pcopy} = req.body    
-    if(name&&surname&&phone&&pcopy){
-        const data = await db.insert({name,surname,phone,pcopy,date}).into('customers').returning('id')
+    const {images} = req.body
+    console.log(images)
+    delete req.body.images 
+    if(req.body){
+        const data = await db.insert(req.body).into('customers').returning('id')
         req.params.user_id = data[0].id*1
 
     }else{
         res.send("Maydonlar to'liq to'ldirilmagan")
- }}
- async function postGrn(req:any,res:any){
-    const date = new Date()
-    const {name,surname,phone,pcopy} = req.body.kafil   
-    const{user_id} = req.params
-    if(name&&surname&&phone&&pcopy){
-        await db.insert({user_id,name,surname,phone,pcopy,date}).into('guarantors')
-    }else{
-        res.send("Maydonlar to'liq to'ldirilmagan")
- }}
- async function postCont(req:any,res:any){
-    const date = new Date()
-    const {pdf,loan,term,every_month} = req.body.contracts
-    const{user_id} = req.params
-    if(pdf&&loan&&term&&every_month){
-       await db.insert({user_id,pdf,loan,date,term,every_month}).into('contracts')
-        
-    }else{
-        res.send("Maydonlar to'liq to'ldirilmagan")
- }}
+    }
+}
+
+interface Payments{
+    user_id:number |string ,
+    payment:number,
+    date:string,
+    type:'cash' | 'card'
+}
+
+app.post('/:user_id/payment',async(req,res)=>{
+    let data:Payments = req.body
+    data.user_id = req.params.user_id
+    await db.insert(data).into('payments')
+    res.sendStatus(200)
+})
+
+
+
+
+
+
 
 interface Arr{
     paid:number
@@ -65,7 +117,6 @@ function sum(arr:Array<Arr>) {
 
     return sum; 
 } 
-
 
 async function testCron(){
     const day = new Date()
@@ -111,9 +162,9 @@ async function cron2(today:Date) {
 
 
 
-testCron()
-const today = new Date()
-cron2(today)
+// testCron()
+// const today = new Date()
+// cron2(today)
 var cron = require('node-cron');
 
 cron.schedule('1 0 0 * * *', () => {
