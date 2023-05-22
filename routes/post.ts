@@ -1,23 +1,15 @@
 import { Router } from "express"
 import { db } from "../db/db"
 import { json } from "body-parser"
-<<<<<<< HEAD
-const path = require('path');
-const multer = require('multer');
-const morgan = require('morgan')
-=======
-import fs from 'fs'
-import multer from 'multer'
-const upload = multer({ dest: 'uploads/' })
->>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
+import { Auth } from "../auth";
+import multer from 'multer';
+
 const app = Router()
 app.use(json())
-app.post('/',async(req,res)=>{  
+app.post('/',Auth,async(req,res)=>{  
     postUser(req,res)
     res.sendStatus(200)
 })
-
-<<<<<<< HEAD
 // app.use(morgan('dev'))
 const storage = multer.diskStorage({
     destination: (req:any, file:any, cb:any) => {
@@ -33,9 +25,9 @@ const storage = multer.diskStorage({
         cb(null, filename);
       },
   });
-  const upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
-app.post('/todesodi',upload.array('images',3), async (req:any, res) => {	
+app.post('/image',Auth,upload.array('images',3), async (req:any, res) => {	
     console.log(req.files)
     const images = req.files
     const user_id = '3'
@@ -76,7 +68,6 @@ interface User{
     date: string;
 }
 
-=======
 interface User{
     first_name: string;
     last_name: string;
@@ -91,7 +82,6 @@ interface User{
     date: string;
 }
 
->>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
 async function postUser(req:any,res:any){
     const date = new Date()
     const {images} = req.body
@@ -113,14 +103,13 @@ interface Payments{
     type:'cash' | 'card'
 }
 
-app.post('/:user_id/payment',async(req,res)=>{
+app.post('/:user_id/payment',Auth,async(req,res)=>{
     let data:Payments = req.body
     data.user_id = req.params.user_id
     await db.insert(data).into('payments')
-<<<<<<< HEAD
+
     res.sendStatus(200)
-=======
->>>>>>> 53ac9bff1f652f09a7866f73337960b873af1579
+
 })
 
 

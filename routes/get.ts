@@ -3,6 +3,7 @@ import { db } from "../db/db"
 import { json } from "body-parser"
 const app = Router()
 app.use(json())
+import { Auth } from "../auth"
 import path from "path"
 interface Data{
     id: number;
@@ -37,7 +38,7 @@ function sum(arr:Array<Arr>) {
 
     return sum; 
 } 
-app.get('/',async(req,res)=>{  
+app.get('/',Auth,async(req,res)=>{  
     let users = await db('customers') as Array<Data>
     const Datasetd =await Promise.all( users.map(async(user)=>{   
         const user_id = user.id
@@ -60,9 +61,7 @@ app.get('/',async(req,res)=>{
 // })
 
 
-
-
-app.get('/image/', (req, res) => {
+app.get('/image/',Auth, (req, res) => {
     const user_id = 3
     db.select('*')
       .from('images')
