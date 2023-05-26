@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const array = ["pcopy", "file", "images"];
+const array = ["pcopy", "file"];
 const upload = multer({ storage: storage });
 interface pay_table {
     paydate: string;
@@ -30,7 +30,7 @@ interface pay_table {
 
 imgRouter.post(
     "/",
-    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
+    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "image" }]),
     async (req: any, res: any) => {
         await postUser(req, res);
         const user_id = req.params.user_id;
