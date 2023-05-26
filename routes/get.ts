@@ -5,6 +5,7 @@ const app = Router();
 app.use(json());
 import { Auth } from "../auth";
 import path from "path";
+import fs from "fs";
 interface Data {
     id: number;
     first_name: string;
@@ -75,11 +76,9 @@ app.get("/:user_id", async (req, res) => {
     );
     res.send(userData[0]);
 });
-
 app.get("/:user_id/:name", (req, res) => {
     const user_id: any = req.params.user_id;
     const name = req.params.name;
-    console.log(req.params);
     db.select("*")
         .from("images")
         .where({ user_id, name })

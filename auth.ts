@@ -17,19 +17,11 @@ async function CheckUser(req: any, res: any) {
     }
 }
 
-<<<<<<< HEAD
 async function Auth(req: any, res: any, next: any) {
     const token = req.headers["x-auth-token"];
     if (token) {
         verify(token, "sirli", (err: any) => {
             if (err) res.send("Yaroqsiz token");
-=======
-async function Auth(req:any,res:any,next:any){
-    const token = req.headers['x-auth-token']
-    if (token){
-        const check = verify(token,'sirli',(err:any)=>{
-            if (err) res.send('Yaroqsiz token')
->>>>>>> da592cdd1758a7592f9ed824f7ecaca296761dfb
             else next();
         });
     } else {

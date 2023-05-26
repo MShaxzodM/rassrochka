@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const array = ["pcopy", "file"];
+const array = ["pcopy", "file", "images"];
 const upload = multer({ storage: storage });
 interface pay_table {
     paydate: string;
@@ -30,22 +30,38 @@ interface pay_table {
 
 imgRouter.post(
     "/",
-    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "image" }]),
+    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
         await postUser(req, res);
         const user_id = req.params.user_id;
-        array.map((el) => {
-            const { path, filename, fieldname } = req.files[el][0];
-            db.insert({
-                user_id,
-                name: fieldname,
-                filename,
-                path,
-            })
-                .into("images")
-                .catch((err) => {
-                    console.log(err);
+        array.map((el: any) => {
+            if (el == "images") {
+                req.files.images.map((namei: any) => {
+                    const { path, filename, fieldname } = namei;
+                    db.insert({
+                        user_id,
+                        name: fieldname,
+                        filename,
+                        path,
+                    })
+                        .into("images")
+                        .catch((err) => {
+                            console.log(err);
+                        });
                 });
+            } else {
+                const { path, filename, fieldname } = req.files[el][0];
+                db.insert({
+                    user_id,
+                    name: fieldname,
+                    filename,
+                    path,
+                })
+                    .into("images")
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
         });
 
         res.sendStatus(200);
