@@ -16,7 +16,7 @@ async function CheckUser(req:any,res:any){
 async function Auth(req:any,res:any,next:any){
     const token = req.headers['x-auth-token']
     if (token){
-        verify(token,'sirli',(err:any)=>{
+        const check = verify(token,'sirli',(err:any)=>{
             if (err) res.send('Yaroqsiz token')
             else next();
         })
