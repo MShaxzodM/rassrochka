@@ -76,27 +76,27 @@ app.get("/:user_id", async (req, res) => {
     );
     res.send(userData[0]);
 });
-app.get("/:user_id/:name", (req, res) => {
-    const user_id: any = req.params.user_id;
-    const name = req.params.name;
-    db.select("*")
-        .from("images")
-        .where({ user_id, name })
-        .then((images) => {
-            if (images[0]) {
-                const dirname = path.resolve();
-                const fullfilepath = path.join(dirname, images[0].path);
-                return res.sendFile(fullfilepath);
-            }
-            return Promise.reject(new Error("Image does not exist"));
-        })
-        .catch((err) =>
-            res.status(404).json({
-                success: false,
-                message: "not found",
-                stack: err.stack,
-            })
-        );
-});
+// app.get("/:user_id/:name", (req, res) => {
+//     const user_id: any = req.params.user_id;
+//     const name = req.params.name;
+//     db.select("*")
+//         .from("images")
+//         .where({ user_id, name })
+//         .then((images) => {
+//             if (images[0]) {
+//                 const dirname = path.resolve();
+//                 const fullfilepath = path.join(dirname, images[0].path);
+//                 return res.sendFile(fullfilepath);
+//             }
+//             return Promise.reject(new Error("Image does not exist"));
+//         })
+//         .catch((err) =>
+//             res.status(404).json({
+//                 success: false,
+//                 message: "not found",
+//                 stack: err.stack,
+//             })
+//         );
+// });
 
 export default app;
