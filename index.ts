@@ -6,7 +6,7 @@ import GET from "./routes/get";
 import cors from "cors";
 import { db } from "./db/db";
 const app = express();
-// app.use(cors());
+// app.use(cors())
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

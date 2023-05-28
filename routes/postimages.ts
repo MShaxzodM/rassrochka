@@ -6,34 +6,25 @@ import cors from "cors";
 
 const imgRouter = Router();
 imgRouter.use(json());
-// imgRouter.use(cors());
-// imgRouter.use(function (req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//     res.header(
-//         "Access-Control-Allow-Headers",
-//         "Origin, X-Requested-With, Content-Type, Accept"
-//     );
-//     next();
-// });
+imgRouter.use(cors({ origin: "*", methods: ["POST"] }));
 imgRouter.use(urlencoded({ extended: true }));
-// const storage = multer.diskStorage({
-//     destination: (req: any, file: any, cb: any) => {
-//         // Specify the directory where you want to store the uploaded files
-//         cb(null, "uploads/");
-//     },
-//     filename: (req: any, file: any, cb: any) => {
-//         // Generate a custom filename based on your requirements
-//         const originalname = file.originalname;
-//         const extension = originalname.substring(originalname.lastIndexOf("."));
-//         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//         const filename = uniqueSuffix + extension;
-//         cb(null, filename);
-//     },
-// });
+const storage = multer.diskStorage({
+    destination: (req: any, file: any, cb: any) => {
+        // Specify the directory where you want to store the uploaded files
+        cb(null, "uploads/");
+    },
+    filename: (req: any, file: any, cb: any) => {
+        // Generate a custom filename based on your requirements
+        const originalname = file.originalname;
+        const extension = originalname.substring(originalname.lastIndexOf("."));
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const filename = uniqueSuffix + extension;
+        cb(null, filename);
+    },
+});
 
-// const array = ["pcopy", "file", "images"];
-// const upload = multer({ storage: storage });
+const array = ["pcopy", "file", "images"];
+const upload = multer({ storage: storage });
 interface pay_table {
     paydate: string;
     user_id: number;
@@ -78,7 +69,7 @@ imgRouter.post(
         //     }
         // });
 
-        res.sendStatus(200);
+        res.send(user_id).sendStatus(200);
     }
 );
 
