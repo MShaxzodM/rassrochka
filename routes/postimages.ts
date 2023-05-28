@@ -69,7 +69,7 @@ imgRouter.post(
         //     }
         // });
 
-        res.send(user_id).sendStatus(200);
+        res.sendStatus(200);
     }
 );
 
