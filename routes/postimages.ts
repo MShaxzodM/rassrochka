@@ -6,7 +6,6 @@ import cors from "cors";
 
 const imgRouter = Router();
 imgRouter.use(json());
-imgRouter.use(cors({ origin: "*", methods: ["POST"] }));
 imgRouter.use(urlencoded({ extended: true }));
 const storage = multer.diskStorage({
     destination: (req: any, file: any, cb: any) => {
@@ -35,61 +34,61 @@ interface pay_table {
 
 imgRouter.post(
     "/",
-    // upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
+    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
         await postUser(req, res);
         const user_id = req.params.user_id;
-        // array.map((el: any) => {
-        //     if (el == "images") {
-        //         req.files.images.map((namei: any) => {
-        //             const { path, filename, fieldname } = namei;
-        //             db.insert({
-        //                 user_id,
-        //                 name: fieldname,
-        //                 filename,
-        //                 path,
-        //             })
-        //                 .into("images")
-        //                 .catch((err) => {
-        //                     console.log(err);
-        //                 });
-        //         });
-        //     } else {
-        //         const { path, filename, fieldname } = req.files[el][0];
-        //         db.insert({
-        //             user_id,
-        //             name: fieldname,
-        //             filename,
-        //             path,
-        //         })
-        //             .into("images")
-        //             .catch((err) => {
-        //                 console.log(err);
-        //             });
-        //     }
-        // });
+        array.map((el: any) => {
+            if (el == "images") {
+                req.files.images.map((namei: any) => {
+                    const { path, filename, fieldname } = namei;
+                    db.insert({
+                        user_id,
+                        name: fieldname,
+                        filename,
+                        path,
+                    })
+                        .into("images")
+                        .catch((err) => {
+                            console.log(err);
+                        });
+                });
+            } else {
+                const { path, filename, fieldname } = req.files[el][0];
+                db.insert({
+                    user_id,
+                    name: fieldname,
+                    filename,
+                    path,
+                })
+                    .into("images")
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
+        });
 
         res.sendStatus(200);
     }
 );
 
 async function postUser(req: any, res: any) {
-    console.log(req.body);
-    const date = new Date();
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =
         req.body.remaind_sum +
         ((req.body.remaind_sum * req.body.procent) / 100) * req.body.months;
     req.body.fine = 0;
-    console.log(req.body);
     if (req.body) {
         const data = await db
             .insert(req.body)
             .into("customers")
-            .returning("id");
+            .returning("id")
+            .catch((err) => res.send("error"));
+
         req.params.user_id = data[0].id * 1;
-        const { months, procent, total_sum, remaind_sum } = req.body;
+        const { months, remaind_sum } = req.body;
         for (let i: number = 1; i <= months; i++) {
+            const date = new Date(req.body.date);
             const datemonth = date.getMonth() + 1;
             const paydate = `${date.getFullYear()}-${datemonth + i}-05`;
             const dataset: pay_table = {
@@ -105,7 +104,10 @@ async function postUser(req: any, res: any) {
                 dataset.status = true;
             }
 
-            await db.insert(dataset).into("pay_table");
+            await db
+                .insert(dataset)
+                .into("pay_table")
+                .catch((err) => res.send("postgres error"));
         }
         return true;
     } else {
@@ -113,3 +115,6 @@ async function postUser(req: any, res: any) {
     }
 }
 export default imgRouter;
+
+// kiritish paytida status = success, har oy 5 kuni error beradi ya'ni  qarzdrlik bolsa.
+// tugagan paytda Ended boladi

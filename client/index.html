@@ -8,47 +8,101 @@
     </head>
     <body>
         <input name="file" id="file" type="file" />
-        <input name="pcopy" id="pc" type="file" />
-        <input name="images" type="file" />
+        <input name="pcopy" id="pcopy" type="file" />
+        <input name="images" id="images" type="file" />
         <input name="images" type="file" />
         <button id="btn">fds</button>
+        <style>
+            .gallery {
+              display: flex;
+              flex-wrap: wrap;
+            }
+            .gallery img {
+              width: 200px;
+              height: 150px;
+              object-fit: cover;
+              margin: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="gallery"></div>
+        
+          <script>
+            fetch('http://localhost:3000/clients/96/images')
+              .then(response => response.json())
+              .then(data => {
+                data.map(image=>{
+                  const gallery = document.querySelector('.gallery');
+                  const img = document.createElement('img');
+                  img.src = 'http://localhost:3000/' + image.path
+                  console.log(img.src)
+                  
+                  gallery.appendChild(img);
+                })
+               
+                
+              })
+              .catch(error => console.error('Error fetching images:', error));
+          </script>
         <script>
-            function goo() {
-                var myHeaders = new Headers();
-                myHeaders.append("Content-Type", "application/json");
-
-                var raw = JSON.stringify({
-                    first_name: "Shaxzod",
-                    last_name: "Masharipov",
-                    phone: "22222555234",
-                    total_sum: 60000000,
+            async function goo() {
+                const jsonData = {
+                    first_name: "user3",
+                    last_name: "3lastname",
+                    phone: "123456",
+                    total_sum: 40000000,
                     first_payment: 5000000,
-                    months: 6,
-                    date: "2023-05-24T07:00:00.000Z",
+                    months: 4,
+                    date: "2023-06-03",
                     restaurant_id: 1,
                     procent: 4,
                     fine_procent: 0.1,
                     address: "beruniy",
                     password_sk: "ksldk43",
                     password_address: "32beeee",
-                    kepil1_first_name: "Hamdam",
-                    kepil1_last_name: "abdalov",
+                    kepil1_first_name: "kepil1",
+                    kepil1_last_name: "kepil1_lastname",
                     kepil1_phone: "32224",
                     kepil1_address: "mmmkkji",
                     kepil1_password_sk: "2343",
                     kepil1_password_address: "beruniy",
-                    kepil2_first_name: "Ibrat",
-                    kepil2_last_name: "abdalov",
+                    kepil2_first_name: "kwpil2",
+                    kepil2_last_name: "kepil2_lastname",
                     kepil2_phone: "21343222233",
                     kepil2_address: "sdhc",
                     kepil2_password_sk: "32523",
                     kepil2_password_address: "beruniy",
+                    work:"itpark",
+                    card_number:'2190843789',
+                    card_date:'23/6',
+                    kepil1_work:'from home',
+                    kepil2_work:'data'
+
+                };
+                var myHeaders = new Headers();
+                var formData = new FormData();
+                Object.entries(jsonData).forEach(([key, value]) => {
+                    formData.append(key, value);
+                });
+                formData.append(
+                    "file",
+                    document.getElementById("file").files[0],
+                    document.getElementById("file").value
+                );
+                formData.append(
+                    "pcopy",
+                    document.getElementById("pcopy").files[0],
+                    document.getElementById("pcopy").value
+                );
+                document.getElementsByName("images").forEach((e) => {
+                    formData.append("images", e.files[0], e.value);
                 });
 
                 var requestOptions = {
                     method: "POST",
                     headers: myHeaders,
-                    body: raw,
+                    body: formData,
                     redirect: "follow",
                 };
 
