@@ -27,16 +27,31 @@
         </head>
         <body>
           <div class="gallery"></div>
-        
           <script>
-            fetch('http://localhost:3000/clients/96/images')
+          fetch('http://localhost:3000/clients/115/file')
+          .then(res=>res.json())
+              .then(res => {
+                  const gallery = document.querySelector('.gallery');
+                  const link = document.createElement('a');
+                  link.setAttribute('href', res.url);
+
+// Set the link text
+link.textContent = 'Click me';
+                  
+                  gallery.appendChild(link);
+                })
+               
+                
+              .catch(error => console.error('Error fetching images:', error));
+              </script>
+          <script>
+            fetch('http://localhost:3000/clients/115/images')
               .then(response => response.json())
               .then(data => {
                 data.map(image=>{
                   const gallery = document.querySelector('.gallery');
                   const img = document.createElement('img');
-                  img.src = 'http://localhost:3000/' + image.path
-                  console.log(img.src)
+                  img.src = image.imageUrl
                   
                   gallery.appendChild(img);
                 })

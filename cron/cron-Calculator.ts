@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { db } from "../db/db";
-
+import { postTokenSms, sendSms } from "./sms/auth";
 interface Arr {
     paid: number;
 }
@@ -15,7 +15,7 @@ function sum(arr: Array<Arr>) {
     return sum;
 }
 
-async function testCron() {
+async function checkUserStatus() {
     const day = new Date();
     const users = await db("pay_table")
         .whereRaw("paydate::text LIKE ?", `%-${day.getMonth()}-%`)
@@ -27,12 +27,25 @@ async function testCron() {
     });
 }
 
+async function warnUsers() {
+    postTokenSms();
+    const users = await db("customers")
+        .where("status", "error" || "success")
+        .select("id", "total_sum", "fine", "fine_procent", "phone");
+    users.forEach(async (user) => {
+        let { id, total_sum, fine, fine_procent, phone } = user;
+        sendSms(true, phone);
+    });
+}
+
 async function fineCalculator() {
+    postTokenSms();
     const users = await db("customers")
         .where("status", "error")
-        .select("id", "total_sum", "fine", "fine_procent");
+        .select("id", "total_sum", "fine", "fine_procent", "phone");
     users.forEach(async (user) => {
-        let { id, total_sum, fine, fine_procent } = user;
+        let { id, total_sum, fine, fine_procent, phone } = user;
+        sendSms(false, phone);
         fine = fine + (total_sum * fine_procent) / 100;
         console.log(typeof fine);
         db("customers").where(id).update(fine);

@@ -47,12 +47,14 @@ async function getUsers() {
         });
 }
 
-async function sendSms() {
+async function sendSms(bool: boolean, phone: string) {
     const token = await db("sms").select("token").first();
+    const msgs: any = db("sms").select("warn", "error").first();
+    const msg = bool ? msgs.warn : msgs.error;
     const FormData = require("form-data");
     let data = new FormData();
-    data.append("mobile_phone", "998900950626");
-    data.append("message", "Birinchi sms muvaffaqiyatli amalga oshirildi");
+    data.append("mobile_phone", phone);
+    data.append("message", msg);
     data.append("from", "4546");
     data.append("callback_url", "http://0000.uz/test.php");
 

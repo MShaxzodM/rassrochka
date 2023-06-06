@@ -5,6 +5,7 @@ import POST from "./routes/post";
 import GET from "./routes/get";
 import cors from "cors";
 import { db } from "./db/db";
+import DEL from "./routes/delete";
 import { postTokenSms, getUsers, sendSms } from "./cron/sms/auth";
 const app = express();
 app.use(cors({ origin: "*" }));
@@ -25,12 +26,23 @@ app.use("/statistics", getStatistics);
 app.use("/uploads", express.static("uploads"));
 app.use("/clients", GET);
 app.use("/post", POST);
+app.use("/del", DEL);
 app.post("/auth", Auth, (req: any, res) => {
     res.send("Siz muvaffaqiyatli royhatdan otdingiz");
 });
 app.get("/restaurants", async (req, res) => {
     const resData = await db("restaurants");
     res.send(resData);
+});
+app.put("/sms", async (req, res) => {
+    const warn: any = req.body.warn
+        ? { warn: req.body.warn }
+        : db("sms").select("warn").first();
+    const error: any = req.body.err
+        ? { error: req.body.err }
+        : db("sms").select("err").first();
+    await db("sms").update({ warn: warn.warn, error: error.error });
+    res.send("updates smses success");
 });
 // sendSms();
 // getUsers();

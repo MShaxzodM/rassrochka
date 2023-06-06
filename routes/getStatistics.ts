@@ -10,8 +10,10 @@ interface Stats {
 }
 
 app.get("/", async (req, res) => {
+    const month = req.query.month ? req.query.month : "%";
     const rasxoddata = (await db("customers")
         .select(db.raw("SUM(total_sum) AS value"), "date")
+        .whereRaw("date::text LIKE ?", `%-${month}-%`)
         .groupBy("date")
         .orderBy("date")) as Array<Stats>;
     rasxoddata.map((data) => {
@@ -25,6 +27,7 @@ app.get("/", async (req, res) => {
             ),
             "date"
         )
+        .whereRaw("date::text LIKE ?", `%-${month}-%`)
         .groupBy("date")
         .orderBy("date")) as Array<Stats>;
     prixoddata.map((data) => {
@@ -42,13 +45,37 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/count", async (req, res) => {
+    const month = req.query.month ? req.query.month : "%";
     const count = await db("customers")
         .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
+        .whereRaw("date::text LIKE ?", `%-${month}-%`)
         .count("* as users")
         .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
     res.send(count);
 });
-
+app.get("/restaurants", async (req, res) => {
+    const month = req.query.month ? req.query.month : "%";
+    const rest: any = await db("restaurants");
+    const data = await Promise.all(
+        rest.map(async (restaurant: any) => {
+            const { id, name } = restaurant;
+            const data: any = { restaurant: name, users: 0 };
+            const count = await db("customers")
+                .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
+                .where("restaurant_id", id)
+                .andWhereRaw("date::text LIKE ?", `%-${month}-%`)
+                .count("* as users")
+                .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
+            count.map((count) => {
+                data.date = count.for_date;
+                data.users = count.users;
+                return data;
+            });
+            return data;
+        })
+    );
+    res.send(data);
+});
 app.get("/all", async (req, res) => {
     let cent: {
         active_users?: number;

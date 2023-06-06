@@ -2,25 +2,37 @@ import multer from "multer";
 import { db } from "../db/db";
 import { Router } from "express";
 import { json, urlencoded } from "body-parser";
-// import { Request } from "express";
-import { S3Client } from "@aws-sdk/client-s3";
-import AWS from "aws-sdk";
 import multerS3 from "multer-s3";
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+    GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { uploadFile, deleteFile, getObjectSignedUrl } from "../aws/s3";
+const imgRouter = Router();
+imgRouter.use(json());
+imgRouter.use(urlencoded({ extended: true }));
 
-AWS.config.update({
-    accessKeyId: "AKIAZHDDHTPPSBJSCOW7",
-    secretAccessKey: "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",
-    region: "eu-north-1",
-});
-
+const array = ["pcopy", "file", "images"];
+interface pay_table {
+    paydate: string;
+    user_id: number;
+    summ: number;
+    remaind: number;
+    status: boolean;
+}
+const bucketName = "rassrochka";
+const region = "eu-north-1";
+const accessKeyId = "AKIAZHDDHTPPSBJSCOW7";
+const secretAccessKey = "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";
 const s3 = new S3Client({
-    region: "eu-north-1",
+    region,
     credentials: {
-        accessKeyId: "AKIAZHDDHTPPSBJSCOW7",
-        secretAccessKey: "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",
+        accessKeyId,
+        secretAccessKey,
     },
 });
-
 const upload = multer({
     storage: multerS3({
         s3: s3,
@@ -29,54 +41,33 @@ const upload = multer({
             cb(null, { fieldName: file.fieldname });
         },
         key: function (req, file, cb) {
-            cb(null, Date.now().toString());
+            const extension = file.originalname.split(".").pop();
+            cb(null, Date.now().toString() + "." + extension);
         },
     }),
 });
-
-const imgRouter = Router();
-imgRouter.use(json());
-imgRouter.use(urlencoded({ extended: true }));
-// const storage = multer.diskStorage({
-//     destination: (req: any, file: any, cb: any) => {
-//         // Specify the directory where you want to store the uploaded files
-//         cb(null, "uploads/");
-//     },
-//     filename: (req: any, file: any, cb: any) => {
-//         // Generate a custom filename based on your requirements
-//         const originalname = file.originalname;
-//         const extension = originalname.substring(originalname.lastIndexOf("."));
-//         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//         const filename = uniqueSuffix + extension;
-//         cb(null, filename);
-//     },
-// });
-
-const array = ["pcopy", "file", "images"];
-// const upload = multer({ storage: storage });
-interface pay_table {
-    paydate: string;
-    user_id: number;
-    summ: number;
-    remaind: number;
-    status: boolean;
-}
-
+// const generateFileName = (bytes = 32) =>
+//     crypto.randomBytes(bytes).toString("hex");
 imgRouter.post(
     "/",
     upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
+        // await uploadFile(
+        //     fileBuffer,
+        //     "istockphoto-1322277517-612x612.jpg",
+        //     file.mimetype
+        // );
         await postUser(req, res);
         const user_id = req.params.user_id;
         array.map((el: any) => {
             if (el == "images") {
                 req.files.images.map((namei: any) => {
-                    const { path, filename, fieldname } = namei;
+                    const { location, key, fieldname } = namei;
                     db.insert({
                         user_id,
                         name: fieldname,
-                        filename,
-                        path,
+                        filename: key,
+                        path: location,
                     })
                         .into("images")
                         .catch((err) => {
@@ -84,12 +75,12 @@ imgRouter.post(
                         });
                 });
             } else {
-                const { path, filename, fieldname } = req.files[el][0];
+                const { location, key, fieldname } = req.files[el][0];
                 db.insert({
                     user_id,
                     name: fieldname,
-                    filename,
-                    path,
+                    filename: key,
+                    path: location,
                 })
                     .into("images")
                     .catch((err) => {
@@ -101,7 +92,6 @@ imgRouter.post(
         res.sendStatus(200);
     }
 );
-
 async function postUser(req: any, res: any) {
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =

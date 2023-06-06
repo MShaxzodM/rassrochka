@@ -6,7 +6,7 @@ app.use(json());
 import { Auth } from "../auth";
 import path from "path";
 import { avoidTMZ } from "./getStatistics";
-
+import { getObjectSignedUrl } from "../aws/s3";
 interface Data {
     id: number;
     first_name: string;
@@ -77,6 +77,7 @@ app.get("/", async (req, res) => {
             .whereRaw("lower(first_name) LIKE ?", `${search.toLowerCase()}%`)
             .orWhereRaw("lower(last_name) LIKE ?", `${search.toLowerCase()}%`)
             .orWhereLike("phone", `%${search}%`)
+            .limit(10)
             .catch((err) =>
                 res.send("Clientlar bazasida xatolik")
             )) as Array<Data>;
@@ -107,42 +108,50 @@ app.get("/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
     console.log(req.params.user_id);
     const userData = await db("customers").where("id", user_id);
-    const restaurant = await db
-        .select("name")
-        .from("restaurants")
-        .where("id", userData[0].restaurant_id);
-    userData[0]["restaurant"] = restaurant[0].name;
-    userData[0]["payments"] = await db("payments")
-        .where({ user_id })
-        .orderBy("date")
-        .catch((er) =>
-            res.send(
-                "Malumotlar bazasida xatolik, kiritilgan malumotlarni tekshiring"
-            )
-        );
-    if (userData[0].payments[0]) {
-        userData[0].payments.map((t: any) => {
-            t.date = avoidTMZ(t.date);
-        });
-    }
+    if (userData.length > 0) {
+        const id = userData[0] ? userData[0].restaurant_id : false;
+        const restaurant = await db
+            .select("name")
+            .from("restaurants")
+            .where({ id });
+        userData[0]["restaurant"] = restaurant[0].name;
+        userData[0]["payments"] = await db("payments")
+            .where({ user_id })
+            .orderBy("date")
+            .catch((er) =>
+                res.send(
+                    "Malumotlar bazasida xatolik, kiritilgan malumotlarni tekshiring"
+                )
+            );
+        if (userData[0].payments[0]) {
+            userData[0].payments.map((t: any) => {
+                t.date = avoidTMZ(t.date);
+            });
+        }
 
-    userData[0]["pay_table"] = await db("pay_table")
-        .where("user_id", req.params.user_id)
-        .orderBy("paydate")
-        .catch((err) => res.send("pay_table bazasida xatolik"));
-    userData[0].pay_table.map((t: any) => {
-        t.paydate = avoidTMZ(t.paydate);
-    });
-    userData[0].date = avoidTMZ(userData[0].date);
-    res.send(userData[0]);
+        userData[0]["pay_table"] = await db("pay_table")
+            .where("user_id", req.params.user_id)
+            .orderBy("paydate")
+            .catch((err) => res.send("pay_table bazasida xatolik"));
+        userData[0].pay_table.map((t: any) => {
+            t.paydate = avoidTMZ(t.paydate);
+        });
+        userData[0].date = avoidTMZ(userData[0].date);
+        res.send(userData[0]);
+    } else {
+        res.status(404).send("There is no user with this id");
+    }
 });
 app.get("/:user_id/images", (req, res) => {
     const user_id: any = req.params.user_id;
-    db.select("path")
+    db.select("filename")
         .from("images")
         .where({ user_id, name: "images" })
-        .then((images) => {
+        .then(async (images) => {
             if (images[0]) {
+                for (let image of images) {
+                    image.imageUrl = await getObjectSignedUrl(image.filename);
+                }
                 res.send(images);
             }
 
@@ -150,22 +159,21 @@ app.get("/:user_id/images", (req, res) => {
         })
         .catch((err) => res.status(404));
 });
-app.get("/:user_id/:name", (req, res) => {
+app.get("/:user_id/:name", async (req, res) => {
     const user_id: any = req.params.user_id;
     const name = req.params.name;
-    db.select("path")
+    const file = await db
+        .select("filename")
         .from("images")
         .where({ user_id, name })
-        .then((images) => {
-            if (images[0]) {
-                const dirname = path.resolve();
-                const fullfilepath = path.join(dirname, images[0].path);
-                return res.sendFile(fullfilepath);
-            }
-
-            return Promise.reject(new Error("Image does not exist"));
-        })
+        .first()
         .catch((err) => res.status(404));
+    if (file) {
+        const url: any = await getObjectSignedUrl(file.filename);
+        const data = { url: url };
+        res.send(data);
+    }
+    res.status(404);
 });
 
 export default app;
