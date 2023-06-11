@@ -6,7 +6,6 @@ import GET from "./routes/get";
 import cors from "cors";
 import { db } from "./db/db";
 import DEL from "./routes/delete";
-import { postTokenSms, getUsers, sendSms } from "./cron/sms/auth";
 const app = express();
 app.use(cors({ origin: "*" }));
 app.use((req, res, next) => {
@@ -44,7 +43,4 @@ app.put("/sms", async (req, res) => {
     await db("sms").update({ warn: warn.warn, error: error.error });
     res.send("updates smses success");
 });
-// sendSms();
-// getUsers();
-// postTokenSms();
 app.listen(3000, () => console.log("app running on port 3000"));

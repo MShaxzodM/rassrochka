@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { db } from "../db/db";
-
 const app = Router();
 
 interface Stats {
@@ -106,6 +105,15 @@ app.get("/all", async (req, res) => {
     cent.ended_users = usrend.count;
     cent.restaurants = rest.count;
     res.send(cent);
+});
+
+app.get("/sms", async (req, res) => {
+    try {
+        const smsStat = await db("sms_table");
+        res.send(smsStat);
+    } catch {
+        res.send("cant get statistics of sms messages because of server error");
+    }
 });
 
 function avoidTMZ(data: any) {

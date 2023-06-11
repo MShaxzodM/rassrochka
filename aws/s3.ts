@@ -12,8 +12,8 @@ dotenv.config();
 
 const bucketName = "rassrochka";
 const region = "eu-north-1";
-const accessKeyId = "AKIAZHDDHTPPY7F564FQ";
-const secretAccessKey = "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";
+const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
+const secretAccessKey = "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";
 
 const s3Client = new S3Client({
     region,
@@ -48,8 +48,6 @@ export async function getObjectSignedUrl(key: any) {
         Bucket: bucketName,
         Key: key,
     };
-
-    // https://aws.amazon.com/blogs/developer/generate-presigned-url-modular-aws-sdk-javascript/
     const command = new GetObjectCommand(params);
     const seconds = 60;
     const url = await getSignedUrl(s3Client, command, { expiresIn: seconds });

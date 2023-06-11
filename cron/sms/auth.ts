@@ -47,10 +47,8 @@ async function getUsers() {
         });
 }
 
-async function sendSms(bool: boolean, phone: string) {
+async function sendSms(msg: string, phone: string) {
     const token = await db("sms").select("token").first();
-    const msgs: any = db("sms").select("warn", "error").first();
-    const msg = bool ? msgs.warn : msgs.error;
     const FormData = require("form-data");
     let data = new FormData();
     data.append("mobile_phone", phone);

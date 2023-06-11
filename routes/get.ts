@@ -24,11 +24,19 @@ interface Arr {
     paid: number;
 }
 
+app.patch("/:user_id/archive", async (req, res) => {
+    try {
+        await db("customers")
+            .update({ status: "ended", remaind_sum: 0 })
+            .where("id", req.params.user_id);
+        res.send("Updated successfully");
+    } catch {
+        res.send("fuck you bitch");
+    }
+});
+
 function sum(arr: Array<Arr>) {
     let sum = 0; // initialize sum
-
-    // Iterate through all elements
-    // and add them to sum
     for (let i = 0; i < arr.length; i++) sum += arr[i].paid;
 
     return sum;
@@ -38,6 +46,7 @@ app.get("/", async (req, res) => {
     if (req.query.search == undefined) {
         const offset: any = req.query.page ? req.query.page : 1;
         const limit: any = req.query.take ? req.query.take : 10;
+        const archive: any = req.query.archive ? "ended" : "%";
         users = (await db("customers")
             .select(
                 "id",
@@ -52,6 +61,7 @@ app.get("/", async (req, res) => {
                 "remaind_sum",
                 "fine"
             )
+            .where("status", "ILIKE", archive)
             .limit(limit)
             .offset((offset - 1) * limit)
             .catch((err) =>

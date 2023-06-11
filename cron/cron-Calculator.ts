@@ -32,9 +32,11 @@ async function warnUsers() {
     const users = await db("customers")
         .where("status", "error" || "success")
         .select("id", "total_sum", "fine", "fine_procent", "phone");
+    const msg = await db("sms").select("warn").first();
     users.forEach(async (user) => {
-        let { id, total_sum, fine, fine_procent, phone } = user;
-        sendSms(true, phone);
+        let { id, phone } = user;
+        await sendSms(msg.warn, phone);
+        await db("sms_table").insert({ user_id: id, msg: msg.warn });
     });
 }
 
@@ -45,7 +47,9 @@ async function fineCalculator() {
         .select("id", "total_sum", "fine", "fine_procent", "phone");
     users.forEach(async (user) => {
         let { id, total_sum, fine, fine_procent, phone } = user;
-        sendSms(false, phone);
+        const msg = await db("sms").select("error").first();
+        await sendSms(msg.error, phone);
+        await db("sms_table").insert({ user_id: id, msg: msg.error });
         fine = fine + (total_sum * fine_procent) / 100;
         console.log(typeof fine);
         db("customers").where(id).update(fine);

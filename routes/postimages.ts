@@ -9,7 +9,7 @@ import {
     DeleteObjectCommand,
     GetObjectCommand,
 } from "@aws-sdk/client-s3";
-import { uploadFile, deleteFile, getObjectSignedUrl } from "../aws/s3";
+import { deleteFile } from "../aws/s3";
 const imgRouter = Router();
 imgRouter.use(json());
 imgRouter.use(urlencoded({ extended: true }));
@@ -24,8 +24,8 @@ interface pay_table {
 }
 const bucketName = "rassrochka";
 const region = "eu-north-1";
-const accessKeyId = "AKIAZHDDHTPPSBJSCOW7";
-const secretAccessKey = "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";
+const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
+const secretAccessKey = "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";
 const s3 = new S3Client({
     region,
     credentials: {
@@ -40,29 +40,45 @@ const upload = multer({
         metadata: function (req, file, cb) {
             cb(null, { fieldName: file.fieldname });
         },
-        key: function (req, file, cb) {
+        key: function (req: any, file, cb) {
             const extension = file.originalname.split(".").pop();
-            cb(null, Date.now().toString() + "." + extension);
+            cb(
+                null,
+                req.body.first_name +
+                    "-" +
+                    req.body.last_name +
+                    "-" +
+                    Date.now().toString() +
+                    "." +
+                    extension
+            );
         },
     }),
 });
-// const generateFileName = (bytes = 32) =>
-//     crypto.randomBytes(bytes).toString("hex");
 imgRouter.post(
     "/",
     upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
-        // await uploadFile(
-        //     fileBuffer,
-        //     "istockphoto-1322277517-612x612.jpg",
-        //     file.mimetype
-        // );
-        await postUser(req, res);
-        const user_id = req.params.user_id;
-        array.map((el: any) => {
-            if (el == "images") {
-                req.files.images.map((namei: any) => {
-                    const { location, key, fieldname } = namei;
+        try {
+            await postUser(req, res);
+            const user_id = req.params.user_id;
+            array.map((el: any) => {
+                if (el == "images") {
+                    req.files.images.map((namei: any) => {
+                        const { location, key, fieldname } = namei;
+                        db.insert({
+                            user_id,
+                            name: fieldname,
+                            filename: key,
+                            path: location,
+                        })
+                            .into("images")
+                            .catch((err) => {
+                                console.log(err);
+                            });
+                    });
+                } else {
+                    const { location, key, fieldname } = req.files[el][0];
                     db.insert({
                         user_id,
                         name: fieldname,
@@ -73,23 +89,25 @@ imgRouter.post(
                         .catch((err) => {
                             console.log(err);
                         });
-                });
-            } else {
-                const { location, key, fieldname } = req.files[el][0];
-                db.insert({
-                    user_id,
-                    name: fieldname,
-                    filename: key,
-                    path: location,
-                })
-                    .into("images")
-                    .catch((err) => {
-                        console.log(err);
-                    });
-            }
-        });
+                }
+            });
 
-        res.sendStatus(200);
+            res.sendStatus(200);
+        } catch {
+            array.map((el: any) => {
+                if (el == "images") {
+                    req.files.images.map((namei: any) => {
+                        const { key } = namei;
+                        deleteFile(key);
+                    });
+                } else {
+                    const { key } = req.files[el][0];
+                    console.log(key);
+                    deleteFile(key);
+                }
+            });
+            res.send("Maydonlar to'liq to'ldirilmagan");
+        }
     }
 );
 async function postUser(req: any, res: any) {
@@ -102,9 +120,7 @@ async function postUser(req: any, res: any) {
         const data = await db
             .insert(req.body)
             .into("customers")
-            .returning("id")
-            .catch((err) => res.send("error"));
-
+            .returning("id");
         req.params.user_id = data[0].id * 1;
         const { months, remaind_sum } = req.body;
         for (let i: number = 1; i <= months; i++) {
@@ -124,17 +140,9 @@ async function postUser(req: any, res: any) {
                 dataset.status = true;
             }
 
-            await db
-                .insert(dataset)
-                .into("pay_table")
-                .catch((err) => res.send("postgres error"));
+            await db.insert(dataset).into("pay_table");
         }
         return true;
-    } else {
-        res.send("Maydonlar to'liq to'ldirilmagan");
     }
 }
 export default imgRouter;
-
-// kiritish paytida status = success, har oy 5 kuni error beradi ya'ni  qarzdrlik bolsa.
-// tugagan paytda Ended boladi
