@@ -27,7 +27,7 @@ async function Auth(req: any, res: any, next: any) {
     } else {
         await CheckUser(req, res);
         if (req.admin) {
-            const token = sign(req.body, "sirli");
+            const token = sign(req.body, "sirli", { expiresIn: "1d" });
             res.header("x-auth-token", token).sendStatus(200);
         } else {
             res.send("Not authorized");

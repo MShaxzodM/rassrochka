@@ -3,6 +3,7 @@ import { db } from "../db/db";
 import { Router } from "express";
 import { json, urlencoded } from "body-parser";
 import multerS3 from "multer-s3";
+import { Auth } from "../auth";
 import {
     S3Client,
     PutObjectCommand,

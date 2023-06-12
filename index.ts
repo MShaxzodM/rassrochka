@@ -27,19 +27,19 @@ app.get("/favicon.ico", (req, res) => {
     res.send("favicon");
 });
 import getStatistics from "./routes/getStatistics";
-app.use("/statistics", getStatistics);
-app.use("/uploads", express.static("uploads"));
-app.use("/clients", GET);
-app.use("/post", POST);
-app.use("/del", DEL);
+app.use("/statistics", Auth, getStatistics);
+// app.use("/uploads",Auth, express.static("uploads"));
+app.use("/clients", Auth, GET);
+app.use("/post", Auth, POST);
+app.use("/del", Auth, DEL);
 app.post("/auth", Auth, (req: any, res) => {
     res.send("Siz muvaffaqiyatli royhatdan otdingiz");
 });
-app.get("/restaurants", async (req, res) => {
+app.get("/restaurants", Auth, async (req, res) => {
     const resData = await db("restaurants");
     res.send(resData);
 });
-app.put("/sms", async (req, res) => {
+app.put("/sms", Auth, async (req, res) => {
     const warn: any = req.body.warn
         ? { warn: req.body.warn }
         : db("sms").select("warn").first();
@@ -55,9 +55,6 @@ cron.schedule("1 0 9 4 * *", () => {
 });
 cron.schedule("1 0 0 5 * *", () => {
     checkUserStatus();
-});
-cron.schedule("1 0 0 * * *", () => {
-    fineCalculator();
 });
 
 cron.schedule("1 0 0 * * *", () => {
