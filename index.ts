@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cron from "node-cron";
 import { Auth } from "./auth";
 import express from "express";
 import POST from "./routes/post";
@@ -6,6 +7,11 @@ import GET from "./routes/get";
 import cors from "cors";
 import { db } from "./db/db";
 import DEL from "./routes/delete";
+import {
+    fineCalculator,
+    warnUsers,
+    checkUserStatus,
+} from "./cron/cron-Calculator";
 const app = express();
 app.use(cors({ origin: "*" }));
 app.use((req, res, next) => {
@@ -42,5 +48,19 @@ app.put("/sms", async (req, res) => {
         : db("sms").select("err").first();
     await db("sms").update({ warn: warn.warn, error: error.error });
     res.send("updates smses success");
+});
+
+cron.schedule("1 0 9 4 * *", () => {
+    warnUsers();
+});
+cron.schedule("1 0 0 5 * *", () => {
+    checkUserStatus();
+});
+cron.schedule("1 0 0 * * *", () => {
+    fineCalculator();
+});
+
+cron.schedule("1 0 0 * * *", () => {
+    fineCalculator();
 });
 app.listen(3000, () => console.log("app running on port 3000"));

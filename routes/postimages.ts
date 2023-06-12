@@ -48,6 +48,8 @@ const upload = multer({
                     "-" +
                     req.body.last_name +
                     "-" +
+                    file.fieldname +
+                    "-" +
                     Date.now().toString() +
                     "." +
                     extension

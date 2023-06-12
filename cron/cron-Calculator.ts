@@ -1,10 +1,8 @@
-import cron from "node-cron";
 import { db } from "../db/db";
 import { postTokenSms, sendSms } from "./sms/auth";
 interface Arr {
     paid: number;
 }
-
 function sum(arr: Array<Arr>) {
     let sum = 0; // initialize sum
 
@@ -41,21 +39,28 @@ async function warnUsers() {
 }
 
 async function fineCalculator() {
-    postTokenSms();
-    const users = await db("customers")
-        .where("status", "error")
-        .select("id", "total_sum", "fine", "fine_procent", "phone");
-    users.forEach(async (user) => {
-        let { id, total_sum, fine, fine_procent, phone } = user;
-        const msg = await db("sms").select("error").first();
-        await sendSms(msg.error, phone);
-        await db("sms_table").insert({ user_id: id, msg: msg.error });
-        fine = fine + (total_sum * fine_procent) / 100;
-        console.log(typeof fine);
-        db("customers").where(id).update(fine);
-    });
-}
+    try {
+        const day = new Date().getDay();
+        if (day < 20) {
+            postTokenSms();
 
-cron.schedule("1 0 0 * * *", () => {
-    const day = new Date();
-});
+            const users = await db("customers")
+                .where("status", "error")
+                .select("id", "total_sum", "fine", "fine_procent", "phone");
+            users.forEach(async (user) => {
+                let { id, total_sum, fine, fine_procent, phone } = user;
+                const msg = await db("sms").select("error").first();
+                fine = fine + (total_sum * fine_procent) / 100;
+                db("customers").where(id).update(fine);
+                msg.error =
+                    msg.error +
+                    `.Sizga ${
+                        (total_sum * fine_procent) / 100
+                    } sum miqdorda peniya qo'shildi`;
+                await sendSms(msg.error, phone);
+                await db("sms_table").insert({ user_id: id, msg: msg.error });
+            });
+        }
+    } catch {}
+}
+export { fineCalculator, warnUsers, checkUserStatus };

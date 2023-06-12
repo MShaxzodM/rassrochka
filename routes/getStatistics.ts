@@ -76,40 +76,66 @@ app.get("/restaurants", async (req, res) => {
     res.send(data);
 });
 app.get("/all", async (req, res) => {
-    let cent: {
-        active_users?: number;
-        ended_users?: number;
-        total_rasxod?: number;
-        total_prixod?: number;
-        restaurants?: number;
-    } = {};
-    const rasxoddata: any = await db("customers").sum("total_sum").first();
-    const prixoddata: any = await db("customers")
-        .sum(
-            db.raw(
-                "(total_sum-first_payment)*(procent*months+100)/100-remaind_sum + first_payment"
-            )
-        )
-        .first();
+    try {
+        const month = req.query.month ? req.query.month : "%";
+        console.log(month);
+        let cent: {
+            active_users?: number;
+            ended_users?: number;
+            total_rasxod?: number;
+            total_prixod?: number;
+            restaurants?: number;
+            sms?: number;
+            month?: any;
+        } = {};
+        const rasxoddata: any = await db("customers")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .sum("total_sum")
+            .first();
 
-    const rest: any = await db("restaurants").count().first();
-    const usr: any = await db("customers").count().first();
-    const usrend: any = await db("customers")
-        .count()
-        .where("status", "ended")
-        .first();
-    cent.total_rasxod = rasxoddata.sum;
-    cent.total_prixod = prixoddata.sum;
-    console.log(rest);
-    cent.active_users = usr.count - usrend.count;
-    cent.ended_users = usrend.count;
-    cent.restaurants = rest.count;
-    res.send(cent);
+        const prixoddata: any = await db("customers")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .sum(
+                db.raw(
+                    "(total_sum-first_payment)*(procent*months+100)/100-remaind_sum + first_payment"
+                )
+            )
+            .first();
+
+        const rest: any = await db("restaurants").count().first();
+        const usr: any = await db("customers")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .count()
+            .first();
+        const usrend: any = await db("customers")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .count()
+            .where("status", "ended")
+            .first();
+        const sms: any = await db("sms_table")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .count()
+            .first();
+        cent.total_rasxod = rasxoddata.sum;
+        cent.total_prixod = prixoddata.sum;
+        cent.active_users = usr.count - usrend.count;
+        cent.ended_users = usrend.count;
+        cent.restaurants = rest.count;
+        cent.sms = sms.count;
+        cent.month = month;
+        res.send(cent);
+    } catch {
+        res.sendStatus(404);
+    }
 });
 
 app.get("/sms", async (req, res) => {
     try {
-        const smsStat = await db("sms_table");
+        const search = req.query.search ? req.query.search : "%";
+        const smsStat = await db("sms_table").whereRaw(
+            "date::text LIKE ?",
+            `%-${search}-%`
+        );
         res.send(smsStat);
     } catch {
         res.send("cant get statistics of sms messages because of server error");

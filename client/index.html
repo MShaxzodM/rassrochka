@@ -28,7 +28,7 @@
         <body>
           <div class="gallery"></div>
           <script>
-          fetch('http://localhost:3000/clients/115/file')
+          fetch('http://localhost:3000/clients/141/file')
           .then(res=>res.json())
               .then(res => {
                   const gallery = document.querySelector('.gallery');
@@ -45,7 +45,7 @@ link.textContent = 'Click me';
               .catch(error => console.error('Error fetching images:', error));
               </script>
           <script>
-            fetch('http://localhost:3000/clients/115/images')
+            fetch('http://localhost:3000/clients/141/images')
               .then(response => response.json())
               .then(data => {
                 data.map(image=>{
