@@ -112,7 +112,7 @@ imgRouter.post(
                         deleteFile(key);
                     }
                 } catch {
-                    res.sendStatus(400);
+                    return false;
                 }
             });
             res.sendStatus(400);
