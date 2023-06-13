@@ -9,71 +9,83 @@ interface Stats {
 }
 
 app.get("/", async (req, res) => {
-    const month = req.query.month ? req.query.month : "%";
-    const rasxoddata = (await db("customers")
-        .select(db.raw("SUM(total_sum) AS value"), "date")
-        .whereRaw("date::text LIKE ?", `%-${month}-%`)
-        .groupBy("date")
-        .orderBy("date")) as Array<Stats>;
-    rasxoddata.map((data) => {
-        data["category"] = "rasxod";
-    });
+    try {
+        const month = req.query.month ? req.query.month : "%";
+        const rasxoddata = (await db("customers")
+            .select(db.raw("SUM(total_sum) AS value"), "date")
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .groupBy("date")
+            .orderBy("date")) as Array<Stats>;
+        rasxoddata.map((data) => {
+            data["category"] = "rasxod";
+        });
 
-    const prixoddata = (await db("customers")
-        .select(
-            db.raw(
-                "SUM((total_sum-first_payment)*(procent*months+100)/100-remaind_sum + first_payment) AS value"
-            ),
-            "date"
-        )
-        .whereRaw("date::text LIKE ?", `%-${month}-%`)
-        .groupBy("date")
-        .orderBy("date")) as Array<Stats>;
-    prixoddata.map((data) => {
-        data["category"] = "prixod";
-    });
-    const stats = rasxoddata.flatMap((value, index) => [
-        value,
-        prixoddata[index],
-    ]);
-    stats.map((stat) => {
-        stat.date = avoidTMZ(stat.date);
-    });
+        const prixoddata = (await db("customers")
+            .select(
+                db.raw(
+                    "SUM((total_sum-first_payment)*(procent*months+100)/100-remaind_sum + first_payment) AS value"
+                ),
+                "date"
+            )
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .groupBy("date")
+            .orderBy("date")) as Array<Stats>;
+        prixoddata.map((data) => {
+            data["category"] = "prixod";
+        });
+        const stats = rasxoddata.flatMap((value, index) => [
+            value,
+            prixoddata[index],
+        ]);
+        stats.map((stat) => {
+            stat.date = avoidTMZ(stat.date);
+        });
 
-    res.send(stats);
+        res.send(stats);
+    } catch {
+        res.send(404);
+    }
 });
 
 app.get("/count", async (req, res) => {
-    const month = req.query.month ? req.query.month : "%";
-    const count = await db("customers")
-        .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
-        .whereRaw("date::text LIKE ?", `%-${month}-%`)
-        .count("* as users")
-        .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
-    res.send(count);
+    try {
+        const month = req.query.month ? req.query.month : "%";
+        const count = await db("customers")
+            .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
+            .whereRaw("date::text LIKE ?", `%-${month}-%`)
+            .count("* as users")
+            .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
+        res.send(count);
+    } catch {
+        res.sendStatus(404);
+    }
 });
 app.get("/restaurants", async (req, res) => {
-    const month = req.query.month ? req.query.month : "%";
-    const rest: any = await db("restaurants");
-    const data = await Promise.all(
-        rest.map(async (restaurant: any) => {
-            const { id, name } = restaurant;
-            const data: any = { restaurant: name, users: 0 };
-            const count = await db("customers")
-                .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
-                .where("restaurant_id", id)
-                .andWhereRaw("date::text LIKE ?", `%-${month}-%`)
-                .count("* as users")
-                .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
-            count.map((count) => {
-                data.date = count.for_date;
-                data.users = count.users;
+    try {
+        const month = req.query.month ? req.query.month : "%";
+        const rest: any = await db("restaurants");
+        const data = await Promise.all(
+            rest.map(async (restaurant: any) => {
+                const { id, name } = restaurant;
+                const data: any = { restaurant: name, users: 0 };
+                const count = await db("customers")
+                    .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
+                    .where("restaurant_id", id)
+                    .andWhereRaw("date::text LIKE ?", `%-${month}-%`)
+                    .count("* as users")
+                    .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
+                count.map((count) => {
+                    data.date = count.for_date;
+                    data.users = count.users;
+                    return data;
+                });
                 return data;
-            });
-            return data;
-        })
-    );
-    res.send(data);
+            })
+        );
+        res.send(data);
+    } catch {
+        res.sendStatus(404);
+    }
 });
 app.get("/all", async (req, res) => {
     try {

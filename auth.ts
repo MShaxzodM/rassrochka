@@ -18,8 +18,9 @@ async function CheckUser(req: any, res: any) {
 }
 
 async function Auth(req: any, res: any, next: any) {
-    const token = req.headers["x-auth-token"];
-    if (token) {
+    const toke = req.headers["authorization"];
+    if (toke) {
+        const token = toke && toke.split(" ")[1];
         verify(token, "sirli", (err: any) => {
             if (err) res.send("Yaroqsiz token");
             else next();
@@ -28,7 +29,7 @@ async function Auth(req: any, res: any, next: any) {
         await CheckUser(req, res);
         if (req.admin) {
             const token = sign(req.body, "sirli", { expiresIn: "1d" });
-            res.header("x-auth-token", token).sendStatus(200);
+            res.send({ token: token }).sendStatus(200);
         } else {
             res.send("Not authorized");
         }

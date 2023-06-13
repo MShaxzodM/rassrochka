@@ -19,7 +19,7 @@ async function postTokenSms() {
         .request(config)
         .then(async (response) => {
             const token = response.data.data.token;
-            await db.insert({ token }).into("sms");
+            await db("sms").update({ token });
         })
         .catch((error) => {
             console.log(error);

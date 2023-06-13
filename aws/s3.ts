@@ -11,9 +11,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const bucketName = "rassrochka";
-const region = "eu-north-1";
-const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
-const secretAccessKey = "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";
+const region = "eu-west-1";
+const accessKeyId = "AKIAZHDDHTPP5RT66HVP";
+const secretAccessKey = "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";
 
 const s3Client = new S3Client({
     region,

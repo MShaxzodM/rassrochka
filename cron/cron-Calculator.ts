@@ -28,13 +28,21 @@ async function checkUserStatus() {
 async function warnUsers() {
     postTokenSms();
     const users = await db("customers")
-        .where("status", "error" || "success")
+        .where("status", "error")
+        .orWhere("status", "success")
         .select("id", "total_sum", "fine", "fine_procent", "phone");
     const msg = await db("sms").select("warn").first();
+    const sms1 = msg.warn.split(":");
+    msg.warn = sms1[0] + new Date().getDate() + sms1[1];
     users.forEach(async (user) => {
         let { id, phone } = user;
+        phone.includes("+998") ? phone.substring(1) : phone;
         await sendSms(msg.warn, phone);
-        await db("sms_table").insert({ user_id: id, msg: msg.warn });
+        await db("sms_table").insert({
+            user_id: id,
+            msg: msg.warn,
+            date: new Date(),
+        });
     });
 }
 
@@ -57,8 +65,13 @@ async function fineCalculator() {
                     `.Sizga ${
                         (total_sum * fine_procent) / 100
                     } sum miqdorda peniya qo'shildi`;
+                phone.includes("+998") ? phone.substring(1) : phone;
                 await sendSms(msg.error, phone);
-                await db("sms_table").insert({ user_id: id, msg: msg.error });
+                await db("sms_table").insert({
+                    user_id: id,
+                    msg: msg.error,
+                    date: new Date(),
+                });
             });
         }
     } catch {}

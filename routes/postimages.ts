@@ -109,7 +109,7 @@ imgRouter.post(
                     deleteFile(key);
                 }
             });
-            res.send("Maydonlar to'liq to'ldirilmagan");
+            res.sendStatus(400);
         }
     }
 );
