@@ -100,16 +100,19 @@ imgRouter.post(
 
             res.sendStatus(200);
         } catch {
-            array.map((el: any) => {
-                if (el == "images") {
-                    req.files.images.map((namei: any) => {
-                        const { key } = namei;
+            array.map(async (el: any) => {
+                try {
+                    if (el == "images") {
+                        req.files.images.map((namei: any) => {
+                            const { key } = namei;
+                            deleteFile(key);
+                        });
+                    } else {
+                        const { key } = req.files[el][0];
                         deleteFile(key);
-                    });
-                } else {
-                    const { key } = req.files[el][0];
-                    console.log(key);
-                    deleteFile(key);
+                    }
+                } catch {
+                    res.sendStatus(400);
                 }
             });
             res.sendStatus(400);
