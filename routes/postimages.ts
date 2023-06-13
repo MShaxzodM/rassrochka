@@ -107,7 +107,7 @@ imgRouter.post(
                             const { key } = namei;
                             deleteFile(key);
                         });
-                    } else {
+                    } else if (el == "pcopy" || "file") {
                         const { key } = req.files[el][0];
                         deleteFile(key);
                     }
