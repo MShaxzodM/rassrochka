@@ -7,7 +7,7 @@ const db = knex({
         host: "localhost",
         user: "postgres",
         port: 5432,
-        password: "0000",
+        password: "new_password",
         database: "rassrochka",
     },
 });
