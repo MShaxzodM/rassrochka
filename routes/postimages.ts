@@ -66,7 +66,6 @@ imgRouter.post(
     upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
         try {
-            console.log(req.files);
             await postUser(req, res);
             const user_id = req.params.user_id;
             array.map((el: any) => {
