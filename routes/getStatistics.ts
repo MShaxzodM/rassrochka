@@ -144,10 +144,15 @@ app.get("/all", async (req, res) => {
 app.get("/sms", async (req, res) => {
     try {
         const search = req.query.search ? req.query.search : "%";
-        const smsStat = await db("sms_table").whereRaw(
-            "date::text LIKE ?",
-            `%-${search}-%`
-        );
+        const smsStat = await db("sms_table")
+            .join("customers", "id", "sms_table.user_id")
+            .select(
+                "customers.phone",
+                "customers.first_name",
+                "sms_table.user_id",
+                "sms_table.msg,sms_table.date"
+            )
+            .whereRaw("date::text LIKE ?", `%-${search}-%`);
         res.send(smsStat);
     } catch {
         res.send("cant get statistics of sms messages because of server error");
