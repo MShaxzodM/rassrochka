@@ -29,7 +29,7 @@ async function Auth(req: any, res: any, next: any) {
         await CheckUser(req, res);
         if (req.admin) {
             const token = sign(req.body, "sirli", { expiresIn: "1d" });
-            res.send({ token: token }).sendStatus(200);
+            res.send({ token: token });
         } else {
             res.send("Not authorized");
         }
