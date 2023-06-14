@@ -47,7 +47,8 @@ app.get("/", async (req, res) => {
         if (req.query.search == undefined) {
             const offset: any = req.query.page ? req.query.page : 1;
             const limit: any = req.query.take ? req.query.take : 10;
-            const archive: any = req.query.archive ? "ended" : "%";
+            const status: any = req.query.status ? req.query.status : "%";
+            const archive: any = req.query.archive ? "error" : "%";
             users = (await db("customers")
                 .select(
                     "id",
@@ -62,7 +63,8 @@ app.get("/", async (req, res) => {
                     "remaind_sum",
                     "fine"
                 )
-                .where("status", "ILIKE", archive)
+                .where("status", archive)
+                .orWhere("status", "ILIKE", status)
                 .limit(limit)
                 .offset((offset - 1) * limit)
                 .catch((err) =>
