@@ -143,17 +143,28 @@ app.get("/all", async (req, res) => {
 
 app.get("/sms", async (req, res) => {
     try {
-        const search = req.query.search ? req.query.search : "%";
+        const limit: any = req.query.take ? req.query.take : 15;
+        const offset: any = req.query.page ? req.query.page : 1;
+        const search = req.query.month ? req.query.month : "%";
         const smsStat = await db("sms_table")
-            .join("customers", "id", "sms_table.user_id")
+            .join("customers", "sms_table.user_id", "customers.id")
             .select(
                 "customers.phone",
                 "customers.first_name",
                 "sms_table.user_id",
-                "sms_table.msg,sms_table.date"
+                "sms_table.msg",
+                "sms_table.date"
             )
-            .whereRaw("date::text LIKE ?", `%-${search}-%`);
-        res.send(smsStat);
+            .whereRaw("sms_table.date::text LIKE ?", `%-${search}-%`)
+            .limit(limit)
+            .offset((offset - 1) * limit);
+        interface Users {
+            count: string | number;
+            sms_table: any;
+        }
+        const counter: any = await db("sms_table").count().first();
+        let response: Users = { count: counter.count, sms_table: smsStat };
+        res.send(response);
     } catch {
         res.send("cant get statistics of sms messages because of server error");
     }
