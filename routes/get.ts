@@ -42,69 +42,54 @@ function sum(arr: Array<Arr>) {
 }
 app.get("/", async (req, res) => {
     try {
+        const search: any = req.query.search ? req.query.search : "%";
         let status: any = req.query.status
             ? [req.query.status, ""]
             : ["success", "error"];
         const archive: any = req.query.archive ? "ended" : "%";
-        status = req.query.archive ? ["", ""] : status;
+        status = req.query.archive ? ["32", "43"] : status;
+        console.log(status);
+        console.log(archive);
         let users: any;
-        if (req.query.search == undefined) {
-            const offset: any = req.query.page ? req.query.page : 1;
-            const limit: any = req.query.take ? req.query.take : 10;
+        const offset: any = req.query.page ? req.query.page : 1;
+        const limit: any = req.query.take ? req.query.take : 10;
 
-            users = (await db("customers")
-                .select(
-                    "id",
-                    "first_name",
-                    "last_name",
-                    "phone",
-                    "total_sum",
-                    "first_payment",
-                    "months",
-                    "date",
-                    "status",
-                    "remaind_sum",
-                    "fine"
-                )
-                .where("status", archive)
-                .orWhere("status", status[0])
-                .orWhere("status", status[1])
-                .limit(limit)
-                .offset((offset - 1) * limit)
-                .catch((err) =>
-                    res.send("Clientlar bazasida xatolik")
-                )) as Array<Data>;
-        } else {
-            const search: any = req.query.search;
-
-            users = (await db("customers")
-                .select(
-                    "id",
-                    "first_name",
-                    "last_name",
-                    "phone",
-                    "total_sum",
-                    "first_payment",
-                    "months",
-                    "date",
-                    "status",
-                    "remaind_sum",
-                    "fine"
-                )
-                .whereRaw(
+        users = (await db("customers")
+            .select(
+                "id",
+                "first_name",
+                "last_name",
+                "phone",
+                "total_sum",
+                "first_payment",
+                "months",
+                "date",
+                "status",
+                "remaind_sum",
+                "fine"
+            )
+            .where(function () {
+                this.where("status", archive)
+                    .orWhere("status", status[0])
+                    .orWhere("status", status[1]);
+            })
+            .andWhere(function () {
+                this.whereRaw(
                     "lower(first_name) LIKE ?",
                     `${search.toLowerCase()}%`
                 )
-                .orWhereRaw(
-                    "lower(last_name) LIKE ?",
-                    `${search.toLowerCase()}%`
-                )
-                .orWhereLike("phone", `%${search}%`)
-                .limit(10)
-                .catch((err) =>
-                    res.send("Clientlar bazasida xatolik")
-                )) as Array<Data>;
-        }
+                    .orWhereRaw(
+                        "lower(last_name) LIKE ?",
+                        `${search.toLowerCase()}%`
+                    )
+                    .orWhereLike("phone", `%${search}%`);
+            })
+            .limit(limit)
+            .offset((offset - 1) * limit)
+            .catch((err) =>
+                res.send("Clientlar bazasida xatolik")
+            )) as Array<Data>;
+
         await users.map((user: any) => {
             user.date = avoidTMZ(user.date);
         });
@@ -115,9 +100,22 @@ app.get("/", async (req, res) => {
 
         let Users: Users = { count: 0, users };
         const counter = await db("customers")
-            .where("status", archive)
-            .orWhere("status", status[0])
-            .orWhere("status", status[1])
+            .where(function () {
+                this.where("status", archive)
+                    .orWhere("status", status[0])
+                    .orWhere("status", status[1]);
+            })
+            .andWhere(function () {
+                this.whereRaw(
+                    "lower(first_name) LIKE ?",
+                    `${search.toLowerCase()}%`
+                )
+                    .orWhereRaw(
+                        "lower(last_name) LIKE ?",
+                        `${search.toLowerCase()}%`
+                    )
+                    .orWhereLike("phone", `%${search}%`);
+            })
             .count();
         Users.count = counter[0].count;
 
