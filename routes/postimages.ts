@@ -113,7 +113,6 @@ imgRouter.post(
     }
 );
 async function postUser(req: any, res: any) {
-    console.log(req.body);
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =
         req.body.remaind_sum +
