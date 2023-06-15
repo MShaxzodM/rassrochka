@@ -46,10 +46,11 @@ app.get("/", async (req, res) => {
         if (req.query.search == undefined) {
             const offset: any = req.query.page ? req.query.page : 1;
             const limit: any = req.query.take ? req.query.take : 10;
-            const status: any = req.query.status
+            let status: any = req.query.status
                 ? [req.query.status, ""]
                 : ["success", "error"];
             const archive: any = req.query.archive ? "ended" : "%";
+            status = req.query.archive ? ["", ""] : status;
             users = (await db("customers")
                 .select(
                     "id",
