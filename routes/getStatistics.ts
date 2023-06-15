@@ -145,6 +145,7 @@ app.get("/table", async (req, res) => {
     try {
         let data: any[] = [];
         for (let i = 1; i <= 12; i++) {
+            const year = new Date().getFullYear();
             const month = i < 10 ? `0${i}` : i;
             let cent: {
                 active_users?: number;
@@ -156,12 +157,12 @@ app.get("/table", async (req, res) => {
                 month?: any;
             } = {};
             const rasxoddata: any = await db("customers")
-                .whereRaw("date::text LIKE ?", `%-${month}-%`)
+                .whereRaw("date::text LIKE ?", `${year}-${month}-%`)
                 .sum("total_sum")
                 .first();
 
             const prixoddata: any = await db("customers")
-                .whereRaw("date::text LIKE ?", `%-${month}-%`)
+                .whereRaw("date::text LIKE ?", `${year}-${month}-%`)
                 .sum(
                     db.raw(
                         "(total_sum-first_payment)*(procent*months+100)/100-remaind_sum + first_payment"
@@ -171,16 +172,16 @@ app.get("/table", async (req, res) => {
 
             const rest: any = await db("restaurants").count().first();
             const usr: any = await db("customers")
-                .whereRaw("date::text LIKE ?", `%-${month}-%`)
+                .whereRaw("date::text LIKE ?", `${year}-${month}-%`)
                 .count()
                 .first();
             const usrend: any = await db("customers")
-                .whereRaw("date::text LIKE ?", `%-${month}-%`)
+                .whereRaw("date::text LIKE ?", `${year}-${month}-%`)
                 .count()
                 .where("status", "ended")
                 .first();
             const sms: any = await db("sms_table")
-                .whereRaw("date::text LIKE ?", `%-${month}-%`)
+                .whereRaw("date::text LIKE ?", `${year}-${month}-%`)
                 .count()
                 .first();
             cent.total_rasxod = rasxoddata.sum;
