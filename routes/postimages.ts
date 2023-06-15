@@ -26,8 +26,8 @@ interface pay_table {
 const region = "eu-north-1";
 // const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
 // const secretAccessKey = "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";
-const accessKeyId = "AKIAZHDDHTPP57FFDG7N";
-const secretAccessKey = "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";
+const accessKeyId = "AKIAZHDDHTPPQ54HIIG5";
+const secretAccessKey = "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";
 
 const s3 = new S3Client({
     region,
