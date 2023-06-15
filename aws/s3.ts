@@ -6,16 +6,14 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import dotenv from "dotenv";
+import { config } from "dotenv";
 
-dotenv.config();
+config();
 
 const bucketName = "rassrochka";
 const region = "eu-north-1";
-// const accessKeyId = "AKIAZHDDHTPP5RT66HVP";
-// const secretAccessKey = "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";
-const accessKeyId = "AKIAZHDDHTPPQ54HIIG5";
-const secretAccessKey = "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";
+const accessKeyId = process.env.ACCESS_KEY_ID as string;
+const secretAccessKey = process.env.SECRET_KEY as string;
 
 const s3Client = new S3Client({
     region,

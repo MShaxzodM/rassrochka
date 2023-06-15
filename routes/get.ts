@@ -4,7 +4,6 @@ import { json } from "body-parser";
 const app = Router();
 app.use(json());
 import { Auth } from "../auth";
-import path from "path";
 import { avoidTMZ } from "./getStatistics";
 import { getObjectSignedUrl } from "../aws/s3";
 interface Data {

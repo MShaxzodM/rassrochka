@@ -3,13 +3,9 @@ import { db } from "../db/db";
 import { Router } from "express";
 import { json, urlencoded } from "body-parser";
 import multerS3 from "multer-s3";
-import { Auth } from "../auth";
-import {
-    S3Client,
-    PutObjectCommand,
-    DeleteObjectCommand,
-    GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { config } from "dotenv";
+config();
+import { S3Client } from "@aws-sdk/client-s3";
 import { deleteFile } from "../aws/s3";
 const imgRouter = Router();
 imgRouter.use(json());
@@ -24,11 +20,10 @@ interface pay_table {
     status: boolean;
 }
 const region = "eu-north-1";
-// const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
-// const secretAccessKey = "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";
-const accessKeyId = "AKIAZHDDHTPPQ54HIIG5";
-const secretAccessKey = "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";
-
+const accessKeyId = process.env.ACCESS_KEY_ID as string;
+const secretAccessKey = process.env.SECRET_KEY as string;
+console.log(accessKeyId);
+console.log(secretAccessKey);
 const s3 = new S3Client({
     region,
     credentials: {

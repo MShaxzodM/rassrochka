@@ -1,5 +1,6 @@
 import knex from "knex";
-
+import { config } from "dotenv";
+config();
 // Create database object
 const db = knex({
     client: "pg",
@@ -7,7 +8,7 @@ const db = knex({
         host: "localhost",
         user: "postgres",
         port: 5432,
-        password: "new_password",
+        password: process.env.POSTGRES_PASSWORD,
         database: "rassrochka",
     },
 });
