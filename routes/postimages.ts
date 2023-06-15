@@ -57,58 +57,58 @@ const upload = multer({
 });
 imgRouter.post(
     "/",
-    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
+    // upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
         try {
             await postUser(req, res);
-            const user_id = req.params.user_id;
-            array.map((el: any) => {
-                if (el == "images") {
-                    req.files.images.map((namei: any) => {
-                        const { location, key, fieldname } = namei;
-                        db.insert({
-                            user_id,
-                            name: fieldname,
-                            filename: key,
-                            path: location,
-                        })
-                            .into("images")
-                            .catch((err) => {
-                                console.log(err);
-                            });
-                    });
-                } else {
-                    const { location, key, fieldname } = req.files[el][0];
-                    db.insert({
-                        user_id,
-                        name: fieldname,
-                        filename: key,
-                        path: location,
-                    })
-                        .into("images")
-                        .catch((err) => {
-                            console.log(err);
-                        });
-                }
-            });
+            // const user_id = req.params.user_id;
+            // array.map((el: any) => {
+            //     if (el == "images") {
+            //         req.files.images.map((namei: any) => {
+            //             const { location, key, fieldname } = namei;
+            //             db.insert({
+            //                 user_id,
+            //                 name: fieldname,
+            //                 filename: key,
+            //                 path: location,
+            //             })
+            //                 .into("images")
+            //                 .catch((err) => {
+            //                     console.log(err);
+            //                 });
+            //         });
+            //     } else {
+            //         const { location, key, fieldname } = req.files[el][0];
+            //         db.insert({
+            //             user_id,
+            //             name: fieldname,
+            //             filename: key,
+            //             path: location,
+            //         })
+            //             .into("images")
+            //             .catch((err) => {
+            //                 console.log(err);
+            //             });
+            //     }
+            // });
 
             res.sendStatus(200);
         } catch {
-            array.map(async (el: any) => {
-                try {
-                    if (el == "images") {
-                        req.files.images.map((namei: any) => {
-                            const { key } = namei;
-                            deleteFile(key);
-                        });
-                    } else if (el == "pcopy" || "file") {
-                        const { key } = req.files[el][0];
-                        deleteFile(key);
-                    }
-                } catch {
-                    return false;
-                }
-            });
+            // array.map(async (el: any) => {
+            //     try {
+            //         if (el == "images") {
+            //             req.files.images.map((namei: any) => {
+            //                 const { key } = namei;
+            //                 deleteFile(key);
+            //             });
+            //         } else if (el == "pcopy" || "file") {
+            //             const { key } = req.files[el][0];
+            //             deleteFile(key);
+            //         }
+            //     } catch {
+            //         return false;
+            //     }
+            // });
             res.sendStatus(400);
         }
     }
