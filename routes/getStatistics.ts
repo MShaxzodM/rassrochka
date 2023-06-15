@@ -143,7 +143,7 @@ app.get("/all", async (req, res) => {
 
 app.get("/table", async (req, res) => {
     try {
-        const data = [];
+        let data: any[] = [];
         for (let i = 1; i <= 12; i++) {
             const month = i < 10 ? `0${i}` : i;
             let cent: {
