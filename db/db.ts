@@ -8,7 +8,6 @@ const db = knex({
         host: "localhost",
         user: "postgres",
         port: 5432,
-        charset: process.env.CHARSET,
         password: process.env.POSTGRES_PASSWORD,
         database: "rassrochka",
     },
