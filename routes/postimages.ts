@@ -59,6 +59,7 @@ imgRouter.post(
     async (req: any, res: any) => {
         try {
             await postUser(req, res);
+            console.log(req.body);
             // const user_id = req.params.user_id;
             // array.map((el: any) => {
             //     if (el == "images") {
