@@ -190,7 +190,7 @@ app.get("/table", async (req, res) => {
             cent.restaurants = rest.count;
             cent.sms = sms.count;
             cent.month = i;
-            [...data, cent];
+            data = [...data, cent];
         }
 
         res.send(data);
