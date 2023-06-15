@@ -59,7 +59,7 @@ imgRouter.post(
     async (req: any, res: any) => {
         try {
             await postUser(req, res);
-            console.log(req.body);
+
             // const user_id = req.params.user_id;
             // array.map((el: any) => {
             //     if (el == "images") {
@@ -113,6 +113,7 @@ imgRouter.post(
     }
 );
 async function postUser(req: any, res: any) {
+    console.log(req.body);
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =
         req.body.remaind_sum +
