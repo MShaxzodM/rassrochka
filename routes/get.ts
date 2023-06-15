@@ -48,8 +48,6 @@ app.get("/", async (req, res) => {
             : ["success", "error"];
         const archive: any = req.query.archive ? "ended" : "%";
         status = req.query.archive ? ["32", "43"] : status;
-        console.log(status);
-        console.log(archive);
         let users: any;
         const offset: any = req.query.page ? req.query.page : 1;
         const limit: any = req.query.take ? req.query.take : 10;
@@ -129,7 +127,6 @@ app.get("/", async (req, res) => {
 app.get("/:user_id", async (req, res) => {
     try {
         const user_id = req.params.user_id;
-        console.log(req.params.user_id);
         const userData = await db("customers").where("id", user_id);
         if (userData.length > 0) {
             const id = userData[0] ? userData[0].restaurant_id : false;

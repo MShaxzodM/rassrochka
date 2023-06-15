@@ -71,8 +71,8 @@ imgRouter.post(
                             path: location,
                         })
                             .into("images")
-                            .catch((err) => {
-                                console.log(err);
+                            .catch(() => {
+                                return false;
                             });
                     });
                 } else {
@@ -85,7 +85,7 @@ imgRouter.post(
                     })
                         .into("images")
                         .catch((err) => {
-                            console.log(err);
+                            return false;
                         });
                 }
             });

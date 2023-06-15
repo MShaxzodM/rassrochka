@@ -90,7 +90,6 @@ app.get("/restaurants", async (req, res) => {
 app.get("/all", async (req, res) => {
     try {
         const month = req.query.month ? req.query.month : "%";
-        console.log(month);
         let cent: {
             active_users?: number;
             ended_users?: number;
