@@ -23,14 +23,14 @@ interface pay_table {
     remaind: number;
     status: boolean;
 }
-// const region = "eu-north-1";
+const region = "eu-north-1";
 // const accessKeyId = "AKIAZHDDHTPPTH7JZQ42";
 // const secretAccessKey = "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";
 const accessKeyId = "AKIAZHDDHTPP57FFDG7N";
 const secretAccessKey = "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";
 
 const s3 = new S3Client({
-    // region,
+    region,
     credentials: {
         accessKeyId,
         secretAccessKey,
