@@ -60,35 +60,26 @@ const upload = multer({
             }
         },
     }),
-});
-imgRouter.post(
-    "/",
-    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
-    async (req: any, res: any) => {
-        if (!req.files) {
-            res.sendStatus(400);
+}).fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]);
+imgRouter.post("/", async (req: any, res: any) => {
+    upload(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            res.send("rasmlar yuklanmadi afsuski");
+            // A Multer error occurred when uploading.
+        } else if (err) {
+            // An unknown error occurred when uploading.
         }
-        try {
-            await postUser(req, res);
 
-            const user_id = req.params.user_id;
-            array.map((el: any) => {
-                if (el == "images") {
-                    req.files.images.map((namei: any) => {
-                        const { location, key, fieldname } = namei;
-                        db.insert({
-                            user_id,
-                            name: fieldname,
-                            filename: key,
-                            path: location,
-                        })
-                            .into("images")
-                            .catch(() => {
-                                return false;
-                            });
-                    });
-                } else {
-                    const { location, key, fieldname } = req.files[el][0];
+        // Everything went fine.
+    });
+    try {
+        await postUser(req, res);
+
+        const user_id = req.params.user_id;
+        array.map((el: any) => {
+            if (el == "images") {
+                req.files.images.map((namei: any) => {
+                    const { location, key, fieldname } = namei;
                     db.insert({
                         user_id,
                         name: fieldname,
@@ -96,43 +87,45 @@ imgRouter.post(
                         path: location,
                     })
                         .into("images")
-                        .catch((err) => {
+                        .catch(() => {
                             return false;
                         });
-                }
-            });
+                });
+            } else {
+                const { location, key, fieldname } = req.files[el][0];
+                db.insert({
+                    user_id,
+                    name: fieldname,
+                    filename: key,
+                    path: location,
+                })
+                    .into("images")
+                    .catch((err) => {
+                        return false;
+                    });
+            }
+        });
 
-            res.sendStatus(200);
-        } catch {
-            array.map(async (el: any) => {
-                try {
-                    if (el == "images") {
-                        req.files.images.map((namei: any) => {
-                            const { key } = namei;
-                            deleteFile(key);
-                        });
-                    } else if (el == "pcopy" || "file") {
-                        const { key } = req.files[el][0];
+        res.sendStatus(200);
+    } catch {
+        array.map(async (el: any) => {
+            try {
+                if (el == "images") {
+                    req.files.images.map((namei: any) => {
+                        const { key } = namei;
                         deleteFile(key);
-                    }
-                } catch {
-                    return false;
+                    });
+                } else if (el == "pcopy" || "file") {
+                    const { key } = req.files[el][0];
+                    deleteFile(key);
                 }
-            });
-            res.sendStatus(400);
-        }
-    },
-    function (err: any, req: any, res: any, next: any) {
-        // Handle Multer errors
-        if (err instanceof multer.MulterError) {
-            // Multer error occurred during file upload
-            res.status(400).send("Multer error: " + err.message);
-        } else {
-            // Other error occurred
-            res.status(500).send("Internal server error");
-        }
+            } catch {
+                return false;
+            }
+        });
+        res.sendStatus(400);
     }
-);
+});
 async function postUser(req: any, res: any) {
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =
