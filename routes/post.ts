@@ -6,16 +6,6 @@ import imgRouter from "./postimages";
 import cors from "cors";
 const app = Router();
 
-// app.use(cors());
-// app.use(function (req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//     res.header(
-//         "Access-Control-Allow-Headers",
-//         "Origin, X-Requested-With, Content-Type, Accept"
-//     );
-//     next();
-// });
 app.use("/", imgRouter);
 app.use(json());
 interface Payments {
@@ -44,7 +34,7 @@ app.post("/:user_id/payment", async (req, res) => {
         if (remaind_sum <= remaind) {
             await db("pay_table").update({ status: true }).where("id", id);
             await db("customers")
-                .update({ status: "succes" })
+                .update({ status: "success" })
                 .where("id", user_id);
         } else return true;
     });
