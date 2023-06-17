@@ -132,6 +132,7 @@ async function postUser(req: any, res: any) {
             if (datemonth < 12) {
                 paydate = `${date.getFullYear()}-${datemonth}-05`;
             } else {
+                console.log(datemonth);
                 paydate = `${date.getFullYear() + 1}-${datemonth - 12}-05`;
             }
 
