@@ -34,53 +34,50 @@ const upload = multer({
         s3: s3,
         bucket: "rassrochka",
         metadata: async function (req, file, cb) {
-            try {
-                cb(null, { fieldName: file.fieldname });
-            } catch {
-                req.files = undefined;
-            }
+            cb(null, { fieldName: file.fieldname });
         },
-        key: async function (req: any, file, cb) {
-            try {
-                const extension = file.originalname.split(".").pop();
-                cb(
-                    null,
-                    req.body.first_name +
-                        "-" +
-                        req.body.last_name +
-                        "-" +
-                        file.fieldname +
-                        "-" +
-                        Date.now().toString() +
-                        "." +
-                        extension
-                );
-            } catch {
-                req.files = undefined;
-            }
+        key: function (req: any, file, cb) {
+            const extension = file.originalname.split(".").pop();
+            cb(
+                null,
+                req.body.first_name +
+                    "-" +
+                    req.body.last_name +
+                    "-" +
+                    file.fieldname +
+                    "-" +
+                    Date.now().toString() +
+                    "." +
+                    extension
+            );
         },
     }),
-}).fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]);
-imgRouter.post("/", async (req: any, res: any) => {
-    upload(req, res, function (err: any) {
-        if (err instanceof multer.MulterError) {
-            res.send("rasmlar yuklanmadi afsuski");
-            console.log("biiiitsh");
-            // A Multer error occurred when uploading.
-        } else if (err) {
-            // An unknown error occurred when uploading.
-        }
+});
+imgRouter.post(
+    "/",
+    upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
+    async (req: any, res: any) => {
+        try {
+            await postUser(req, res);
 
-        // Everything went fine.
-    });
-    try {
-        await postUser(req, res);
-
-        const user_id = req.params.user_id;
-        array.map((el: any) => {
-            if (el == "images") {
-                req.files.images.map((namei: any) => {
-                    const { location, key, fieldname } = namei;
+            const user_id = req.params.user_id;
+            array.map((el: any) => {
+                if (el == "images") {
+                    req.files.images.map((namei: any) => {
+                        const { location, key, fieldname } = namei;
+                        db.insert({
+                            user_id,
+                            name: fieldname,
+                            filename: key,
+                            path: location,
+                        })
+                            .into("images")
+                            .catch(() => {
+                                return false;
+                            });
+                    });
+                } else {
+                    const { location, key, fieldname } = req.files[el][0];
                     db.insert({
                         user_id,
                         name: fieldname,
@@ -88,45 +85,33 @@ imgRouter.post("/", async (req: any, res: any) => {
                         path: location,
                     })
                         .into("images")
-                        .catch(() => {
+                        .catch((err) => {
                             return false;
                         });
-                });
-            } else {
-                const { location, key, fieldname } = req.files[el][0];
-                db.insert({
-                    user_id,
-                    name: fieldname,
-                    filename: key,
-                    path: location,
-                })
-                    .into("images")
-                    .catch((err) => {
-                        return false;
-                    });
-            }
-        });
-
-        res.sendStatus(200);
-    } catch {
-        array.map(async (el: any) => {
-            try {
-                if (el == "images") {
-                    req.files.images.map((namei: any) => {
-                        const { key } = namei;
-                        deleteFile(key);
-                    });
-                } else if (el == "pcopy" || "file") {
-                    const { key } = req.files[el][0];
-                    deleteFile(key);
                 }
-            } catch {
-                return false;
-            }
-        });
-        res.sendStatus(400);
+            });
+
+            res.sendStatus(200);
+        } catch {
+            array.map(async (el: any) => {
+                try {
+                    if (el == "images") {
+                        req.files.images.map((namei: any) => {
+                            const { key } = namei;
+                            deleteFile(key);
+                        });
+                    } else if (el == "pcopy" || "file") {
+                        const { key } = req.files[el][0];
+                        deleteFile(key);
+                    }
+                } catch {
+                    return false;
+                }
+            });
+            res.sendStatus(400);
+        }
     }
-});
+);
 async function postUser(req: any, res: any) {
     req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
     req.body.remaind_sum =
@@ -142,8 +127,14 @@ async function postUser(req: any, res: any) {
         const { months, remaind_sum } = req.body;
         for (let i: number = 1; i <= months; i++) {
             const date = new Date(req.body.date);
-            const datemonth = date.getMonth() + 1;
-            const paydate = `${date.getFullYear()}-${datemonth + i}-05`;
+            const datemonth = date.getMonth() + 1 + i;
+            let paydate: string = "";
+            if (datemonth < 12) {
+                paydate = `${date.getFullYear()}-${datemonth}-05`;
+            } else {
+                paydate = `${date.getFullYear() + 1}-${datemonth - 12}-05`;
+            }
+
             const dataset: pay_table = {
                 paydate,
                 user_id: req.params.user_id,
