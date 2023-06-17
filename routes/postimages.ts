@@ -33,23 +33,31 @@ const upload = multer({
     storage: multerS3({
         s3: s3,
         bucket: "rassrochka",
-        metadata: function (req, file, cb) {
-            cb(null, { fieldName: file.fieldname });
+        metadata: async function (req, file, cb) {
+            try {
+                cb(null, { fieldName: file.fieldname });
+            } catch {
+                req.files = undefined;
+            }
         },
-        key: function (req: any, file, cb) {
-            const extension = file.originalname.split(".").pop();
-            cb(
-                null,
-                req.body.first_name +
-                    "-" +
-                    req.body.last_name +
-                    "-" +
-                    file.fieldname +
-                    "-" +
-                    Date.now().toString() +
-                    "." +
-                    extension
-            );
+        key: async function (req: any, file, cb) {
+            try {
+                const extension = file.originalname.split(".").pop();
+                cb(
+                    null,
+                    req.body.first_name +
+                        "-" +
+                        req.body.last_name +
+                        "-" +
+                        file.fieldname +
+                        "-" +
+                        Date.now().toString() +
+                        "." +
+                        extension
+                );
+            } catch {
+                req.files = undefined;
+            }
         },
     }),
 });
@@ -57,6 +65,9 @@ imgRouter.post(
     "/",
     upload.fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]),
     async (req: any, res: any) => {
+        if (!req.files) {
+            res.sendStatus(400);
+        }
         try {
             await postUser(req, res);
 
