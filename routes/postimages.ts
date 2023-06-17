@@ -62,9 +62,10 @@ const upload = multer({
     }),
 }).fields([{ name: "file" }, { name: "pcopy" }, { name: "images" }]);
 imgRouter.post("/", async (req: any, res: any) => {
-    upload(req, res, function (err) {
+    upload(req, res, function (err: any) {
         if (err instanceof multer.MulterError) {
             res.send("rasmlar yuklanmadi afsuski");
+            console.log("biiiitsh");
             // A Multer error occurred when uploading.
         } else if (err) {
             // An unknown error occurred when uploading.
