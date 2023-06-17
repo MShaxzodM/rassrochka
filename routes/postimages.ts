@@ -121,6 +121,16 @@ imgRouter.post(
             });
             res.sendStatus(400);
         }
+    },
+    function (err: any, req: any, res: any, next: any) {
+        // Handle Multer errors
+        if (err instanceof multer.MulterError) {
+            // Multer error occurred during file upload
+            res.status(400).send("Multer error: " + err.message);
+        } else {
+            // Other error occurred
+            res.status(500).send("Internal server error");
+        }
     }
 );
 async function postUser(req: any, res: any) {
