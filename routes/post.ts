@@ -1,9 +1,7 @@
 import { Router } from "express";
 import { db } from "../db/db";
 import { json } from "body-parser";
-import { Auth } from "../auth";
 import imgRouter from "./postimages";
-import cors from "cors";
 const app = Router();
 
 app.use("/", imgRouter);

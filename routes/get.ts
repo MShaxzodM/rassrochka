@@ -3,7 +3,6 @@ import { db } from "../db/db";
 import { json } from "body-parser";
 const app = Router();
 app.use(json());
-import { Auth } from "../auth";
 import { avoidTMZ } from "./getStatistics";
 import { getObjectSignedUrl } from "../aws/s3";
 interface Data {

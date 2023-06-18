@@ -50,12 +50,29 @@ app.get("/", async (req, res) => {
 app.get("/count", async (req, res) => {
     try {
         const month = req.query.month ? req.query.month : "%";
-        const count = await db("customers")
+        const count: any = await db("customers")
             .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
             .whereRaw("date::text LIKE ?", `%-${month}-%`)
             .count("* as users")
             .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
-        res.send(count);
+
+        const resdata = await Promise.all(
+            count.map(async (coun: any) => {
+                const month = coun.for_date;
+                const dailycount: any = await db("customers")
+                    .select(db.raw("date"))
+                    .whereRaw("date::text LIKE ?", `${month}-%`)
+                    .count("* as users")
+                    .groupBy("date");
+                await dailycount.map((user: any) => {
+                    user.date = avoidTMZ(user.date);
+                });
+                coun.daily = dailycount;
+                return coun;
+            })
+        );
+        console.log(resdata);
+        res.send(resdata);
     } catch {
         res.sendStatus(404);
     }
