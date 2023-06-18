@@ -23,7 +23,6 @@ app.post("/:user_id/payment", async (req, res) => {
         .select("remaind_sum")
         .from("customers")
         .where("id", user_id);
-    console.log(userData);
     const remaind_sum = userData[0].remaind_sum - data.payment;
     await db("customers")
         .update({ remaind_sum: remaind_sum })
@@ -40,16 +39,19 @@ app.post("/:user_id/payment", async (req, res) => {
                 .where("id", user_id);
         } else return true;
     });
+
     const common = await db("pay_table")
         .select("id", "remaind", "summ")
-        .where("status", false)
+        .where({ status: false, user_id: user_id })
+        .orderBy("id")
         .first();
-    const { id, summ, remaind } = common;
     console.log(common);
-    console.log(summ + remaind_sum - remaind);
-    console.log(remaind_sum);
+    const { id, remaind } = common;
+    console.log(remaind_sum - remaind);
     await db("pay_table")
-        .update({ remaind: remaind_sum, summ: remaind_sum - remaind })
+        .update({
+            summ: remaind_sum - remaind,
+        })
         .where("id", id);
     await db.insert(data).into("payments");
 
