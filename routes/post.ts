@@ -43,8 +43,11 @@ app.post("/:user_id/payment", async (req, res) => {
         .where("status", false)
         .first();
     const { id, summ, remaind } = common;
+    console.log(common);
+    console.log(summ + remaind_sum - remaind);
+    console.log(remaind_sum);
     await db("pay_table")
-        .update({ remaind: remaind_sum, summ: summ + remaind_sum - remaind })
+        .update({ remaind: remaind_sum, summ: remaind_sum - remaind })
         .where("id", id);
     await db.insert(data).into("payments");
 
