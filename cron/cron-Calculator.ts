@@ -48,7 +48,8 @@ async function warnUsers() {
 
 async function fineCalculator() {
     try {
-        const day = new Date().getDay();
+        const date = new Date();
+        const day = date.getDay();
         if (day < 20) {
             postTokenSms();
 
@@ -60,6 +61,7 @@ async function fineCalculator() {
                 const msg = await db("sms").select("error").first();
                 fine = fine + (total_sum * fine_procent) / 100;
                 db("customers").where(id).update(fine);
+                db("fines").insert({ user_id: id, fine, date });
                 msg.error =
                     msg.error +
                     `.Sizga ${

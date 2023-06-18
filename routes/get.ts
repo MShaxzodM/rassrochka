@@ -147,6 +147,19 @@ app.get("/:user_id", async (req, res) => {
                     t.date = avoidTMZ(t.date);
                 });
             }
+            userData[0]["fines"] = await db("fines")
+                .where({ user_id })
+                .orderBy("date")
+                .catch((er) =>
+                    res.send(
+                        "Malumotlar bazasida xatolik, kiritilgan malumotlarni tekshiring"
+                    )
+                );
+            if (userData[0].fines[0]) {
+                userData[0].fines.map((t: any) => {
+                    t.date = avoidTMZ(t.date);
+                });
+            }
 
             userData[0]["pay_table"] = await db("pay_table")
                 .where("user_id", req.params.user_id)
