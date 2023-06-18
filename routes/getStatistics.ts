@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { db } from "../db/db";
+import { getUsers } from "../cron/sms/auth";
 const app = Router();
 
 interface Stats {
@@ -114,6 +115,7 @@ app.get("/all", async (req, res) => {
             total_prixod?: number;
             restaurants?: number;
             sms?: number;
+            smsBalance?: string;
             month?: any;
         } = {};
         const rasxoddata: any = await db("customers")
@@ -149,6 +151,8 @@ app.get("/all", async (req, res) => {
         cent.active_users = usr.count - usrend.count;
         cent.ended_users = usrend.count;
         cent.restaurants = rest.count;
+        const smsBalance = await getUsers();
+        cent.smsBalance = smsBalance;
         cent.sms = sms.count;
         cent.month = month;
         res.send(cent);

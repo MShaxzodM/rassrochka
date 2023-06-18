@@ -28,6 +28,7 @@ async function postTokenSms() {
 
 async function getUsers() {
     const token = await db("sms").select("token").first();
+    let balance = "";
     let config = {
         method: "get",
         maxBodyLength: Infinity,
@@ -37,16 +38,16 @@ async function getUsers() {
         },
     };
 
-    axios
+    await axios
         .request(config)
         .then((response) => {
-            console.log(JSON.stringify(response.data));
+            balance = response.data.balance;
         })
         .catch((error) => {
             console.log(error);
         });
+    return balance;
 }
-
 async function sendSms(msg: string, phone: string) {
     const token = await db("sms").select("token").first();
     const FormData = require("form-data");
