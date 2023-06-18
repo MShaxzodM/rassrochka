@@ -32,7 +32,7 @@ app.post("/:user_id/payment", async (req, res) => {
         const { id, remaind } = table;
         if (remaind_sum <= remaind) {
             await db("pay_table")
-                .update({ status: true, remaind: remaind_sum })
+                .update({ status: true, remaind: remaind_sum, summ: 0 })
                 .where("id", id);
             await db("customers")
                 .update({ status: "success" })
