@@ -34,10 +34,18 @@ app.post("/:user_id/payment", async (req, res) => {
         if (remaind_sum <= remaind) {
             await db("pay_table").update({ status: true }).where("id", id);
             await db("customers")
-                .update({ status: "success" })
+                .update({ status: "success", remaind: remaind_sum })
                 .where("id", user_id);
         } else return true;
     });
+    const common = await db("pay_table")
+        .select("id", "remaind", "summ")
+        .where("status", false)
+        .first();
+    const { id, summ, remaind } = common;
+    await db("pay_table")
+        .update({ remaind: remaind_sum, summ: summ + remaind_sum - remaind })
+        .where("id", id);
     await db.insert(data).into("payments");
 
     res.sendStatus(200);
