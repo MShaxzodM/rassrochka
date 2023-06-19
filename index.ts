@@ -50,7 +50,7 @@ app.put("/sms", Auth, async (req, res) => {
     res.send("updates smses success");
 });
 
-cron.schedule("1 0 9 4 * *", () => {
+cron.schedule("1 0 9 2,3,4 * *", () => {
     warnUsers();
 });
 cron.schedule("1 0 0 5 * *", () => {
