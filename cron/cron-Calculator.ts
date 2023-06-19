@@ -33,7 +33,8 @@ async function warnUsers() {
         .select("id", "total_sum", "fine", "fine_procent", "phone");
     const msg = await db("sms").select("warn").first();
     const sms1 = msg.warn.split(":");
-    msg.warn = sms1[0] + new Date().getDate() + sms1[1];
+    const thi = new Date();
+    msg.warn = sms1[0] + thi.getFullYear() + thi.getMonth + "05" + sms1[1];
     users.forEach(async (user) => {
         let { id, phone } = user;
         phone.includes("+998") ? phone.substring(1) : phone;
@@ -50,22 +51,31 @@ async function fineCalculator() {
     try {
         const date = new Date();
         const day = date.getDay();
-        if (day < 20) {
+        if (day <= 20) {
             postTokenSms();
 
             const users = await db("customers")
                 .where("status", "error")
                 .select("id", "total_sum", "fine", "fine_procent", "phone");
+            const thismonth = await db("pay_table")
+                .select("summ")
+                .where("date", `${date.getFullYear()}-${date.getMonth}-05}`)
+                .first();
             users.forEach(async (user) => {
                 let { id, total_sum, fine, fine_procent, phone } = user;
+                const { summ } = thismonth;
                 const msg = await db("sms").select("error").first();
-                fine = fine + (total_sum * fine_procent) / 100;
+                fine = fine + (summ * fine_procent) / 100;
                 db("customers").where(id).update(fine);
-                db("fines").insert({ user_id: id, fine, date });
+                db("fines").insert({
+                    user_id: id,
+                    fine: (summ * fine_procent) / 100,
+                    date,
+                });
                 msg.error =
                     msg.error +
                     `.Sizga ${
-                        (total_sum * fine_procent) / 100
+                        (summ * fine_procent) / 100
                     } sum miqdorda peniya qo'shildi`;
                 phone.includes("+998") ? phone.substring(1) : phone;
                 await sendSms(msg.error, phone);
