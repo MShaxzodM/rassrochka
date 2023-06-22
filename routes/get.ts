@@ -133,8 +133,7 @@ app.get("/:user_id", async (req, res) => {
             const restaurant = await db
                 .select("name")
                 .from("restaurants")
-                .where({ id })
-                .orderBy("date");
+                .where({ id });
             userData[0]["restaurant"] = restaurant[0].name;
             userData[0]["payments"] = await db("payments")
                 .where({ user_id })
