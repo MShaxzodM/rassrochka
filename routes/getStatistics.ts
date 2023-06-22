@@ -55,7 +55,8 @@ app.get("/count", async (req, res) => {
             .select(db.raw("TO_CHAR(date, 'YYYY-MM') AS for_date"))
             .whereRaw("date::text LIKE ?", `%-${month}-%`)
             .count("* as users")
-            .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
+            .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
+            .orderBy("date");
 
         const resdata = await Promise.all(
             count.map(async (coun: any) => {
@@ -64,7 +65,8 @@ app.get("/count", async (req, res) => {
                     .select(db.raw("date"))
                     .whereRaw("date::text LIKE ?", `${month}-%`)
                     .count("* as users")
-                    .groupBy("date");
+                    .groupBy("date")
+                    .orderBy("date");
                 await dailycount.map((user: any) => {
                     user.date = avoidTMZ(user.date);
                 });
@@ -91,7 +93,8 @@ app.get("/restaurants", async (req, res) => {
                     .where("restaurant_id", id)
                     .andWhereRaw("date::text LIKE ?", `%-${month}-%`)
                     .count("* as users")
-                    .groupByRaw("TO_CHAR(date, 'YYYY-MM')");
+                    .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
+                    .orderBy("date");
                 count.map((count) => {
                     data.date = count.for_date;
                     data.users = count.users;
@@ -236,7 +239,8 @@ app.get("/sms", async (req, res) => {
             )
             .whereRaw("sms_table.date::text LIKE ?", `%-${search}-%`)
             .limit(limit)
-            .offset((offset - 1) * limit);
+            .offset((offset - 1) * limit)
+            .orderBy("date");
         smsStat.map((stat) => {
             stat.date = avoidTMZ(stat.date);
         });

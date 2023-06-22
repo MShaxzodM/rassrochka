@@ -83,6 +83,7 @@ app.get("/", async (req, res) => {
             })
             .limit(limit)
             .offset((offset - 1) * limit)
+            .orderBy("date")
             .catch((err) =>
                 res.send("Clientlar bazasida xatolik")
             )) as Array<Data>;
@@ -132,7 +133,8 @@ app.get("/:user_id", async (req, res) => {
             const restaurant = await db
                 .select("name")
                 .from("restaurants")
-                .where({ id });
+                .where({ id })
+                .orderBy("date");
             userData[0]["restaurant"] = restaurant[0].name;
             userData[0]["payments"] = await db("payments")
                 .where({ user_id })
