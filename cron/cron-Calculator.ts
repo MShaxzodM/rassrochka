@@ -34,7 +34,7 @@ async function warnUsers() {
     const msg = await db("sms").select("warn").first();
     const sms1 = msg.warn.split(":");
     const thi = new Date();
-    msg.warn = sms1[0] + thi.getFullYear() + thi.getMonth + "05" + sms1[1];
+    msg.warn = sms1[0] + thi.getFullYear() + thi.getMonth() + "05" + sms1[1];
     users.forEach(async (user) => {
         let { id, phone } = user;
         phone.includes("+998") ? phone.substring(1) : phone;
