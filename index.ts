@@ -29,9 +29,9 @@ app.get("/favicon.ico", (req, res) => {
 import getStatistics from "./routes/getStatistics";
 app.use("/statistics", Auth, getStatistics);
 // app.use("/uploads",Auth, express.static("uploads"));
-app.use("/clients", GET);
-app.use("/post", POST);
-app.use("/del", DEL);
+app.use("/clients", Auth, GET);
+app.use("/post", Auth, POST);
+app.use("/del", Auth, DEL);
 app.post("/auth", Auth, (req: any, res) => {
     res.send("Siz muvaffaqiyatli royhatdan otdingiz");
 });
