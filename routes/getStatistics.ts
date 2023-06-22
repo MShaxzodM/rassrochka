@@ -56,7 +56,7 @@ app.get("/count", async (req, res) => {
             .whereRaw("date::text LIKE ?", `%-${month}-%`)
             .count("* as users")
             .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
-            .orderBy("date");
+            .orderByRaw("TO_CHAR(date, 'YYYY-MM')");
 
         const resdata = await Promise.all(
             count.map(async (coun: any) => {
@@ -94,7 +94,7 @@ app.get("/restaurants", async (req, res) => {
                     .andWhereRaw("date::text LIKE ?", `%-${month}-%`)
                     .count("* as users")
                     .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
-                    .orderBy("date");
+                    .orderByRaw("TO_CHAR(date, 'YYYY-MM')");
                 count.map((count) => {
                     data.date = count.for_date;
                     data.users = count.users;
