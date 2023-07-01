@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "15mb" }));
+app.use(bodyParser.json());
 app.get("/favicon.ico", (req, res) => {
     res.send("favicon");
 });
