@@ -126,7 +126,7 @@ async function postUser(req: any, res: any) {
             .into("customers")
             .returning("id");
         req.params.user_id = data[0].id * 1;
-        const { months, remaind_sum, total_sum } = req.body;
+        const { months, remaind_sum, total_sum, first_payment } = req.body;
         for (let i: number = 1; i <= months; i++) {
             const date = new Date(req.body.date);
             const datemonth = date.getMonth() + 1 + i;
@@ -148,7 +148,8 @@ async function postUser(req: any, res: any) {
                 status: false,
             };
             dataset.summ = Math.ceil(remaind_sum / months / 1000) * 1000;
-            dataset.miqdori = Math.ceil(total_sum / months / 1000) * 1000;
+            dataset.miqdori =
+                Math.ceil(total_sum - first_payment / months / 1000) * 1000;
             dataset.foizi = dataset.summ - dataset.miqdori;
             dataset.remaind = dataset.summ * months - dataset.summ * i;
             if (dataset.remaind >= remaind_sum) {
