@@ -115,50 +115,55 @@ imgRouter.post(
     }
 );
 async function postUser(req: any, res: any) {
-    req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
-    req.body.remaind_sum =
-        req.body.remaind_sum +
-        ((req.body.remaind_sum * req.body.procent) / 100) * req.body.months;
-    req.body.fine = 0;
-    if (req.body) {
-        const data = await db
-            .insert(req.body)
-            .into("customers")
-            .returning("id");
-        req.params.user_id = data[0].id * 1;
-        const { months, remaind_sum, total_sum, first_payment } = req.body;
-        for (let i: number = 1; i <= months; i++) {
-            const date = new Date(req.body.date);
-            const datemonth = date.getMonth() + 1 + i;
-            let paydate: string = "";
+    try {
+        req.body.remaind_sum = req.body.total_sum - req.body.first_payment;
+        req.body.remaind_sum =
+            req.body.remaind_sum +
+            ((req.body.remaind_sum * req.body.procent) / 100) * req.body.months;
+        req.body.fine = 0;
+        if (req.body) {
+            const data = await db
+                .insert(req.body)
+                .into("customers")
+                .returning("id");
+            req.params.user_id = data[0].id * 1;
+            const { months, remaind_sum, total_sum, first_payment } = req.body;
+            for (let i: number = 1; i <= months; i++) {
+                const date = new Date(req.body.date);
+                const datemonth = date.getMonth() + 1 + i;
+                let paydate: string = "";
 
-            if (datemonth <= 12) {
-                paydate = `${date.getFullYear()}-${datemonth}-05`;
-            } else {
-                paydate = `${date.getFullYear() + 1}-${datemonth - 12}-05`;
+                if (datemonth <= 12) {
+                    paydate = `${date.getFullYear()}-${datemonth}-05`;
+                } else {
+                    paydate = `${date.getFullYear() + 1}-${datemonth - 12}-05`;
+                }
+
+                const dataset: pay_table = {
+                    paydate,
+                    user_id: req.params.user_id,
+                    summ: 0,
+                    miqdori: 0,
+                    foizi: 0,
+                    remaind: 0,
+                    status: false,
+                };
+                dataset.summ = Math.ceil(remaind_sum / months / 1000) * 1000;
+                dataset.miqdori =
+                    Math.ceil((total_sum - first_payment) / months / 1000) *
+                    1000;
+                dataset.foizi = dataset.summ - dataset.miqdori;
+                dataset.remaind = dataset.summ * months - dataset.summ * i;
+                if (dataset.remaind >= remaind_sum) {
+                    dataset.status = true;
+                }
+
+                await db.insert(dataset).into("pay_table");
             }
-
-            const dataset: pay_table = {
-                paydate,
-                user_id: req.params.user_id,
-                summ: 0,
-                miqdori: 0,
-                foizi: 0,
-                remaind: 0,
-                status: false,
-            };
-            dataset.summ = Math.ceil(remaind_sum / months / 1000) * 1000;
-            dataset.miqdori =
-                Math.ceil(total_sum - first_payment / months / 1000) * 1000;
-            dataset.foizi = dataset.summ - dataset.miqdori;
-            dataset.remaind = dataset.summ * months - dataset.summ * i;
-            if (dataset.remaind >= remaind_sum) {
-                dataset.status = true;
-            }
-
-            await db.insert(dataset).into("pay_table");
+            return true;
         }
-        return true;
+    } catch (err) {
+        res.send(err);
     }
 }
 export default imgRouter;
